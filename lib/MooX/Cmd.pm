@@ -11,7 +11,9 @@ use Data::Record;
 my %DEFAULT_OPTIONS = (
 	'creation_chain_methods' => ['new_with_options','new'],
 	'creation_method_name' => 'new_with_cmd',
-	'execute_return_name' => 'execute_return',
+	'execute_return_method_name' => 'execute_return',
+	'execute_method_name' => 'execute',
+	'command_method_name' => 'command',
 	'search_path' => undef,
 );
 
@@ -19,12 +21,14 @@ sub import {
 	my ( undef, %import_params ) = @_;
 	my ( %import_options ) = ( %DEFAULT_OPTIONS, %import_params );
 	my $caller = caller;
-	my $execute_return_name = $import_options{execute_return_name};
+	my $execute_return_method_name = $import_options{execute_return_method_name};
+	my $execute_method_name = $import_options{execute_method_name};
+	my $command_method_name = $import_options{command_method_name};
 	
 	{
 
 		no strict 'refs';
-		*{"${caller}::$execute_return_name"} = sub { shift->{$execute_return_name} }
+		*{"${caller}::$execute_return_method_name"} = sub { shift->{$execute_return_method_name} }
 
 	}
 	
@@ -51,9 +55,9 @@ sub import {
 			my %create_params;
 
 			for (@cmd_plugins) {
-				croak "you need an 'execute' function in ".$caller unless $_->can('execute');
-				if ($_->can('command')) {
-					$cmds{$_->command} = $_;
+				croak "you need an '".$command_method_name."' function in ".$caller unless $_->can($execute_method_name);
+				if ($_->can($command_method_name)) {
+					$cmds{$_->$command_method_name} = $_;
 					if (defined $params{$_}) {
 						$create_params{$_} = delete $params{$_};
 					}
@@ -105,7 +109,7 @@ sub import {
 				if ($creation_method) {
 					$cmd_create_params{__moox_cmd_chain} = \@moox_cmd_chain;
 					$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
-					@execute_return = @{$cmd_plugin->$execute_return_name};
+					@execute_return = @{$cmd_plugin->$execute_return_method_name};
 				} else {
 					for (@creation_chain) {
 						if ($creation_method = $cmd->can($_)) {
@@ -114,13 +118,13 @@ sub import {
 						}
 					}
 					croak "cant find a creation method on ".$cmd unless $creation_method;
-					@execute_return = $cmd_plugin->execute(\@ARGV,\@moox_cmd_chain);
+					@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
 				}
 			} else {
-				@execute_return = $self->execute(\@ARGV,\@moox_cmd_chain);
+				@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
 			}
 
-			$self->{$execute_return_name} = \@execute_return;
+			$self->{$execute_return_method_name} = \@execute_return;
 			
 			return $self;
 		}
