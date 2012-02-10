@@ -13,26 +13,13 @@ my %DEFAULT_OPTIONS = (
 	'creation_method_name' => 'new_with_cmd',
 	'execute_return_method_name' => 'execute_return',
 	'execute_method_name' => 'execute',
-	'command_method_name' => 'command',
-	'search_path' => undef,
+	'base' => undef,
 );
 
 sub _mkcommand {
-	my ( $package, $search_path ) = @_;
-	$package =~ s/^${search_path}:://g;
+	my ( $package, $base ) = @_;
+	$package =~ s/^${base}:://g;
 	lc($package);
-}
-
-sub _uniq {
-	my %seen = ();
-	my @r = ();
-	foreach my $a (@_) {
-		unless ($seen{$a}) {
-			push @r, $a;
-			$seen{$a} = 1;
-		}
-	}
-	return @r;
 }
 
 sub import {
@@ -41,33 +28,20 @@ sub import {
 	my $caller = caller;
 	my $execute_return_method_name = $import_options{execute_return_method_name};
 	my $execute_method_name = $import_options{execute_method_name};
-	my $command_method_name = $import_options{command_method_name};
-	my $search_path = $import_options{search_path} ? $import_options{search_path} : ($caller.'::Cmd');
+	my $base = $import_options{base} ? $import_options{base} : ($caller.'::Cmd');
 	my @creation_chain = ref $import_options{creation_chain_methods} eq 'ARRAY' ? @{$import_options{creation_chain_methods}} : ($import_options{creation_chain_methods});
 
-	my @cmd_plugins = Module::Pluggable::Object->new(
-		search_path => $search_path,
-		inner => 0,
+	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
+	my @cmd_plugins = grep {
+		croak "you need an '".$execute_method_name."' function in ".$_ unless $_->can($execute_method_name);
+		my $class = $_;
+		$class =~ s/${base}:://g;
+		$class =~ /:/ ? 0 : 1;
+	} Module::Pluggable::Object->new(
+		search_path => $base,
 		require => 1,
 	)->plugins;
-
-	my %cmd_plugin_commands;
 	
-	for (@cmd_plugins) {
-		croak "you need an '".$execute_method_name."' function in ".$_ unless $_->can($execute_method_name);
-		$cmd_plugin_commands{$_} = [];
-	}
-	
-	{
-
-		no strict 'refs';
-		*{"${caller}::$command_method_name"} = sub {
-			my ( $command ) = @_;
-			push @{$cmd_plugin_commands{$caller}}, $command;
-		}
-
-	}
-
 	{
 
 		no strict 'refs';
@@ -87,14 +61,8 @@ sub import {
 
 			my %cmds;
 			
-			for my $cmd_plugin (keys %cmd_plugin_commands) {
-				if (@{$cmd_plugin_commands{$cmd_plugin}}) {
-					for (@{$cmd_plugin_commands{$cmd_plugin}}) {
-						$cmds{$_} = $cmd_plugin;
-					}
-				} else {
-					$cmds{_mkcommand($cmd_plugin,$search_path)} = $cmd_plugin;
-				}
+			for my $cmd_plugin (@cmd_plugins) {
+				$cmds{_mkcommand($cmd_plugin,$base)} = $cmd_plugin;
 			}
 			
 			my $opts_record = Data::Record->new({
@@ -169,6 +137,8 @@ sub import {
 =head1 SYNOPSIS
  
 =head1 DESCRIPTION
+
+TODO - will get refactored
 
 =head1 SUPPORT
 
