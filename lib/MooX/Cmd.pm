@@ -138,7 +138,7 @@ sub import {
  
 =head1 DESCRIPTION
 
-TODO - will get refactored
+TODO - will get refactored - using on own risk
 
 =head1 SUPPORT
 
