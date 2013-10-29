@@ -111,10 +111,10 @@ sub import {
 					}
 				}
 				croak "cant find a creation method on ".$cmd unless $creation_method;
-				@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
+				@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain, \%cmds);
 			}
 		} else {
-			@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
+			@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain, \%cmds);
 		}
 
 		$self->{$execute_return_method_name} = \@execute_return;
