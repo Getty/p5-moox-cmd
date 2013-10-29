@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use Carp;
 use Module::Pluggable::Object;
+use Module::Runtime qw/ use_module /;
 use Regexp::Common;
 use Data::Record;
 use Package::Stash;
@@ -34,13 +35,12 @@ sub import {
 
 	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
 	my @cmd_plugins = grep {
-		croak "you need an '".$execute_method_name."' function in ".$_ unless $_->can($execute_method_name);
 		my $class = $_;
-		$class =~ s/${base}:://g;
-		$class =~ /:/ ? 0 : 1;
+		$class =~ s/${base}:://;
+		$class !~ /:/;
 	} Module::Pluggable::Object->new(
 		search_path => $base,
-		require => 1,
+		require => 0,
 	)->plugins;
 	
 	my $stash = Package::Stash->new($caller);
@@ -71,8 +71,10 @@ sub import {
 		my $cmd;
 	
 		while (my $arg = shift @args) {
-			if (defined $cmds{$arg}) {
-				$cmd = $cmds{$arg};
+			if ( $cmd = $cmds{$arg}) {
+                use_module( $cmd );
+                croak "you need an '".$execute_method_name."' function in ".$cmd 
+                    unless $cmd->can($execute_method_name);
 				last;
 			} else {
 				push @used_args, $arg;
