@@ -75,14 +75,12 @@ sub import {
 		my $cmd;
 
 		while (my $arg = shift @args) {
-			if ( $cmd = $cmds{$arg}) {
-				use_module( $cmd );
-				croak "you need an '".$execute_method_name."' function in ".$cmd 
-				unless $cmd->can($execute_method_name);
-				last;
-			} else {
-				push @used_args, $arg;
-			}
+			push @used_args, $arg and next unless $cmd = $cmds{$arg};
+
+			use_module( $cmd );
+			croak "you need an '".$execute_method_name."' function in ".$cmd 
+			unless $cmd->can($execute_method_name);
+			last;
 		}
 
 		my $creation_method;
@@ -93,13 +91,17 @@ sub import {
 
 		# here begins do_execute
 		@ARGV = @used_args;
+		$params{command_args} = [ @args ];
+		$params{command_chain} = \@moox_cmd_chain; # later modification hopefully will modify ...
+		$params{command_name} = $cmd;
+		$params{command_commands} = \%cmds;
 		my $self = $creation_method->($class, %params);
+		$cmd and push @moox_cmd_chain, $self;
 
 		my @execute_return;
 
 		if ($cmd) {
 			@ARGV = @args;
-			push @moox_cmd_chain, $self;
 			my %cmd_create_params = defined $create_params{$cmd} ? %{$create_params{$cmd}} : ();
 			my $creation_method_name = $import_options{creation_method_name};
 			my $creation_method = $cmd->can($creation_method_name);
