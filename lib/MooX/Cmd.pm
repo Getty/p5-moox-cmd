@@ -50,7 +50,7 @@ sub import {
 		search_path => $base,
 		require => 0,
 	)->plugins;
-	
+
 	my $stash = Package::Stash->new($caller);
 	my %cmds;
 
@@ -73,7 +73,7 @@ sub import {
 		my @args = $opts_record->records(join(' ',@ARGV));
 		my @used_args;
 		my $cmd;
-	
+
 		while (my $arg = shift @args) {
 			if ( $cmd = $cmds{$arg}) {
 				use_module( $cmd );
@@ -84,18 +84,19 @@ sub import {
 				push @used_args, $arg;
 			}
 		}
-		
+
 		my $creation_method;
 		for (@creation_chain) {
 			$creation_method = $caller->can($_);
 			last if $creation_method;
 		}
-		
+
+		# here begins do_execute
 		@ARGV = @used_args;
 		my $self = $creation_method->($class, %params);
-		
+
 		my @execute_return;
-		
+
 		if ($cmd) {
 			@ARGV = @args;
 			push @moox_cmd_chain, $self;
@@ -122,7 +123,7 @@ sub import {
 		}
 
 		$self->{$execute_return_method_name} = \@execute_return;
-		
+
 		return $self;
 	});
 
