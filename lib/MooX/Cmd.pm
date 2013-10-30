@@ -28,6 +28,14 @@ sub import {
 	my ( undef, %import_params ) = @_;
 	my ( %import_options ) = ( %DEFAULT_OPTIONS, %import_params );
 	my $caller = caller;
+	my @caller_isa;
+	{ no strict 'refs'; @caller_isa = @{"${caller}::ISA"} };
+
+	#don't add this to a role
+	#ISA of a role is always empty !
+	## no critic qw/ProhibitStringyEval/
+	@caller_isa or return;
+
 	my $execute_return_method_name = $import_options{execute_return_method_name};
 	my $execute_method_name = $import_options{execute_method_name};
 	my $base = $import_options{base} ? $import_options{base} : ($caller.'::Cmd');
@@ -44,37 +52,33 @@ sub import {
 	)->plugins;
 	
 	my $stash = Package::Stash->new($caller);
+	my %cmds;
+
+	for my $cmd_plugin (@cmd_plugins) {
+		$cmds{_mkcommand($cmd_plugin,$base)} = $cmd_plugin;
+	}
 
 	$stash->add_symbol('&'.$execute_return_method_name, sub { shift->{$execute_return_method_name} });
 	$stash->add_symbol('&'.$import_options{creation_method_name}, sub {
 		my ( $class, %params ) = @_;
 
 		my @moox_cmd_chain = defined $params{__moox_cmd_chain} ? @{$params{__moox_cmd_chain}} : ();
-		
 		my %create_params;
 
-		my %cmds;
-		
-		for my $cmd_plugin (@cmd_plugins) {
-			$cmds{_mkcommand($cmd_plugin,$base)} = $cmd_plugin;
-		}
-		
 		my $opts_record = Data::Record->new({
 			split  => qr{\s+},
 			unless => $RE{quoted},
 		});
 
 		my @args = $opts_record->records(join(' ',@ARGV));
-
 		my @used_args;
-		
 		my $cmd;
 	
 		while (my $arg = shift @args) {
 			if ( $cmd = $cmds{$arg}) {
-                use_module( $cmd );
-                croak "you need an '".$execute_method_name."' function in ".$cmd 
-                    unless $cmd->can($execute_method_name);
+				use_module( $cmd );
+				croak "you need an '".$execute_method_name."' function in ".$cmd 
+				unless $cmd->can($execute_method_name);
 				last;
 			} else {
 				push @used_args, $arg;
@@ -111,10 +115,10 @@ sub import {
 					}
 				}
 				croak "cant find a creation method on ".$cmd unless $creation_method;
-				@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain, \%cmds);
+				@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
 			}
 		} else {
-			@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain, \%cmds);
+			@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
 		}
 
 		$self->{$execute_return_method_name} = \@execute_return;
@@ -122,6 +126,7 @@ sub import {
 		return $self;
 	});
 
+	return;
 }
 
 1;
