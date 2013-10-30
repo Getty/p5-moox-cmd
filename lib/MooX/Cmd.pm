@@ -3,11 +3,7 @@ package MooX::Cmd;
 
 use strict;
 use warnings;
-use Carp;
 use Module::Pluggable::Object;
-use Module::Runtime qw/ use_module /;
-use Regexp::Common;
-use Data::Record;
 use Package::Stash;
 
 my %DEFAULT_OPTIONS = (
@@ -39,7 +35,6 @@ sub import {
 	my $execute_return_method_name = $import_options{execute_return_method_name};
 	my $execute_method_name = $import_options{execute_method_name};
 	my $base = $import_options{base} ? $import_options{base} : ($caller.'::Cmd');
-	my @creation_chain = ref $import_options{creation_chain_methods} eq 'ARRAY' ? @{$import_options{creation_chain_methods}} : ($import_options{creation_chain_methods});
 
 	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
 	my @cmd_plugins = grep {
@@ -60,74 +55,15 @@ sub import {
 
 	$stash->add_symbol('&'.$execute_return_method_name, sub { shift->{$execute_return_method_name} });
 	$stash->add_symbol('&'.$import_options{creation_method_name}, sub {
-		my ( $class, %params ) = @_;
-
-		my @moox_cmd_chain = defined $params{__moox_cmd_chain} ? @{$params{__moox_cmd_chain}} : ();
-		my %create_params;
-
-		my $opts_record = Data::Record->new({
-			split  => qr{\s+},
-			unless => $RE{quoted},
-		});
-
-		my @args = $opts_record->records(join(' ',@ARGV));
-		my @used_args;
-		my $cmd;
-
-		while (my $arg = shift @args) {
-			push @used_args, $arg and next unless $cmd = $cmds{$arg};
-
-			use_module( $cmd );
-			croak "you need an '".$execute_method_name."' function in ".$cmd 
-			unless $cmd->can($execute_method_name);
-			last;
-		}
-
-		my $creation_method;
-		for (@creation_chain) {
-			$creation_method = $caller->can($_);
-			last if $creation_method;
-		}
-
-		# here begins do_execute
-		@ARGV = @used_args;
-		$params{command_args} = [ @args ];
-		$params{command_chain} = \@moox_cmd_chain; # later modification hopefully will modify ...
-		$params{command_name} = $cmd;
-		$params{command_commands} = \%cmds;
-		my $self = $creation_method->($class, %params);
-		$cmd and push @moox_cmd_chain, $self;
-
-		my @execute_return;
-
-		if ($cmd) {
-			@ARGV = @args;
-			my %cmd_create_params = defined $create_params{$cmd} ? %{$create_params{$cmd}} : ();
-			my $creation_method_name = $import_options{creation_method_name};
-			my $creation_method = $cmd->can($creation_method_name);
-			my $cmd_plugin;
-			if ($creation_method) {
-				$cmd_create_params{__moox_cmd_chain} = \@moox_cmd_chain;
-				$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
-				@execute_return = @{$cmd_plugin->$execute_return_method_name};
-			} else {
-				for (@creation_chain) {
-					if ($creation_method = $cmd->can($_)) {
-						$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
-						last;
-					}
-				}
-				croak "cant find a creation method on ".$cmd unless $creation_method;
-				@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
-			}
-		} else {
-			@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
-		}
-
-		$self->{$execute_return_method_name} = \@execute_return;
-
-		return $self;
+		return shift->_initialize_from_cmd(@_, command_commands => \%cmds, __cmd_create_options => \%import_options);
 	});
+
+	my $apply_modifiers = sub {
+		$caller->can('_initialize_from_cmd') and return;
+		my $with = $caller->can('with');
+		$with->('MooX::Cmd::Role');
+	};
+	$apply_modifiers->();
 
 	return;
 }
