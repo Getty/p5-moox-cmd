@@ -103,10 +103,12 @@ sub _initialize_from_cmd
 			croak "cant find a creation method on " . $cmd unless $creation_method_name;
 			$creation_method = $class->can($creation_method_name); # XXX this is a perfect candidate for a new function in List::MoreUtils
 			$cmd_plugin = $creation_method->($cmd);
-			@execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
+			$cmd_create_options->{execute_from_new}
+			  and @execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
 		}
 	} else {
-		@execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
+		$cmd_create_options->{execute_from_new}
+		  and @execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
 	}
 
 	$self->{$execute_return_method_name} = \@execute_return;

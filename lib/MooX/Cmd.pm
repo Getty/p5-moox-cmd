@@ -11,6 +11,7 @@ my %DEFAULT_OPTIONS = (
 	'creation_method_name' => 'new_with_cmd',
 	'execute_return_method_name' => 'execute_return',
 	'execute_method_name' => 'execute',
+	'execute_from_new' => undef,
 	'base' => undef,
 );
 
@@ -35,6 +36,8 @@ sub import {
 	my $execute_return_method_name = $import_options{execute_return_method_name};
 	my $execute_method_name = $import_options{execute_method_name};
 	my $base = $import_options{base} ? $import_options{base} : ($caller.'::Cmd');
+
+	defined $import_options{execute_from_new} or $import_options{execute_from_new} = 1; # set default until we want other way
 
 	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
 	my @cmd_plugins = grep {
