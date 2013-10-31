@@ -122,6 +122,43 @@ sub import {
                               # where $myapp_cmd_command_cmd_command == $self
   }
 
+  package MyZapp;
+
+  use Moo;
+  use MooX::Cmd execute_from_new => 0;
+
+  sub execute {
+    my ( $self ) = @_;
+    my @extra_argv = @{$self->command_args};
+    my @chain = @{$self->command_chain} # in this case only ( $myzapp )
+                              # where $myzapp == $self
+  }
+
+  1;
+ 
+  package MyZapp::Cmd::Command;
+  # for "myapp command"
+
+  use Moo;
+  use MooX::Cmd execute_from_new => 0;
+
+  # gets executed on "myapp command" but not on "myapp command command"
+  # there MyApp::Cmd::Command still gets instantiated and for the chain
+  sub execute {
+    my ( $self ) = @_;
+    my @extra_argv = @{$self->command_args};
+    my @chain = @{$self->command_chain} # in this case ( $myzapp, $myzapp_cmd_command )
+                              # where $myzapp_cmd_command == $self
+  }
+
+  1;
+  package main;
+
+  use MyApp;
+
+  MyZapp->new_with_cmd->execute();
+  MyApp->new_with_cmd;
+
   1;
 
 =head1 DESCRIPTION
