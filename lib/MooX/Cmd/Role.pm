@@ -14,7 +14,13 @@ use Data::Record;
 use List::Util qw /first/;
 use Params::Util qw/_ARRAY/;
 
-=attribute command_args
+=head1 DESCRIPTION
+
+MooX::Cmd::Role is made for modern, flexible Moo style to tailor cli commands.
+
+=head1 ATTRIBUTES
+
+=head2 command_args
 
 ARRAY-REF of args on command line
 
@@ -22,7 +28,7 @@ ARRAY-REF of args on command line
 
 has 'command_args' => ( is => "ro" );
 
-=attribute command_chain
+=head2 command_chain
 
 ARRAY-REF of commands lead to this instance
 
@@ -30,7 +36,7 @@ ARRAY-REF of commands lead to this instance
 
 has 'command_chain' => ( is => "ro" );
 
-=attribute command_name
+=head2 command_name
 
 ARRAY-REF the name of the command lead to this command
 
@@ -38,7 +44,7 @@ ARRAY-REF the name of the command lead to this command
 
 has 'command_name' => ( is => "ro" );
 
-=attribute command_commands
+=head2 command_commands
 
 HASH-REF names of other commands 
 
