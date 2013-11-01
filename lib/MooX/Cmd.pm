@@ -3,27 +3,10 @@ package MooX::Cmd;
 
 use strict;
 use warnings;
-use Module::Pluggable::Object;
 use Package::Stash;
 
-my %DEFAULT_OPTIONS = (
-	'creation_chain_methods' => ['new_with_options','new'],
-	'creation_method_name' => 'new_with_cmd',
-	'execute_return_method_name' => 'execute_return',
-	'execute_method_name' => 'execute',
-	'execute_from_new' => undef,
-	'base' => undef,
-);
-
-sub _mkcommand {
-	my ( $package, $base ) = @_;
-	$package =~ s/^${base}:://g;
-	lc($package);
-}
-
 sub import {
-	my ( undef, %import_params ) = @_;
-	my ( %import_options ) = ( %DEFAULT_OPTIONS, %import_params );
+	my ( undef, %import_options ) = @_;
 	my $caller = caller;
 	my @caller_isa;
 	{ no strict 'refs'; @caller_isa = @{"${caller}::ISA"} };
@@ -34,31 +17,15 @@ sub import {
 	@caller_isa or return;
 
 	my $execute_return_method_name = $import_options{execute_return_method_name};
-	my $execute_method_name = $import_options{execute_method_name};
-	my $base = $import_options{base} ? $import_options{base} : ($caller.'::Cmd');
 
-	defined $import_options{execute_from_new} or $import_options{execute_from_new} = 1; # set default until we want other way
-
-	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
-	my @cmd_plugins = grep {
-		my $class = $_;
-		$class =~ s/${base}:://;
-		$class !~ /:/;
-	} Module::Pluggable::Object->new(
-		search_path => $base,
-		require => 0,
-	)->plugins;
+	exists $import_options{execute_from_new} or $import_options{execute_from_new} = 1; # set default until we want other way
 
 	my $stash = Package::Stash->new($caller);
-	my %cmds;
-
-	for my $cmd_plugin (@cmd_plugins) {
-		$cmds{_mkcommand($cmd_plugin,$base)} = $cmd_plugin;
-	}
-
-	$stash->add_symbol('&'.$execute_return_method_name, sub { shift->{$execute_return_method_name} });
-	$stash->add_symbol('&'.$import_options{creation_method_name}, sub {
-		return shift->_initialize_from_cmd(@_, command_commands => \%cmds, __cmd_create_options => \%import_options);
+	defined $import_options{execute_return_method_name}
+	  and $stash->add_symbol('&'.$import_options{execute_return_method_name}, sub { shift->{$import_options{execute_return_method_name}} });
+	defined $import_options{creation_method_name}
+	  and $stash->add_symbol('&'.$import_options{creation_method_name}, sub {
+		goto &MooX::Cmd::Role::_initialize_from_cmd;;
 	});
 
 	my $apply_modifiers = sub {
@@ -67,6 +34,22 @@ sub import {
 		$with->('MooX::Cmd::Role');
 	};
 	$apply_modifiers->();
+
+	my %default_modifiers = (
+		base => '_build_command_base',
+		execute_method_name => '_build_command_execute_method_name',
+		execute_return_method_name => '_build_command_execute_return_method_name',
+		creation_chain_methods => '_build_command_creation_chain_methods',
+		creation_method_name => '_build_command_execute_method_name',
+		execute_from_new => '_build_command_execute_from_new',
+	);
+
+	my $around;
+	foreach my $opt_key (keys %default_modifiers) {
+		exists $import_options{$opt_key} or next;
+		$around or $around = $caller->can('around');
+		$around->( $default_modifiers{$opt_key} => sub { $import_options{$opt_key} } );
+	}
 
 	return;
 }
