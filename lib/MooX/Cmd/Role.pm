@@ -15,6 +15,23 @@ use Module::Pluggable::Object;
 use List::Util qw /first/;
 use Params::Util qw/_ARRAY/;
 
+=head1 SYNOPSIS
+
+  package MyFoo;
+
+  with MooX::Cmd::Role;
+
+  sub _build_command_base { "MyFoo::Command" }
+
+  sub _build_command_execute_method_name { "run" }
+
+  sub _build_command_execute_from_new { 0 }
+
+  package main;
+
+  my $cmd = MyFoo->new_with_cmd;
+  $cmd->command_chain->[-1]->run();
+
 =head1 DESCRIPTION
 
 MooX::Cmd::Role is made for modern, flexible Moo style to tailor cli commands.
