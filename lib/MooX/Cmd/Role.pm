@@ -17,6 +17,44 @@ use Params::Util qw/_ARRAY/;
 
 =head1 SYNOPSIS
 
+=head2 using role and want behavior as MooX::Cmd
+
+  package MyFoo;
+  
+  with MooX::Cmd::Role;
+  
+  sub _build_command_execute_from_new { 1 }
+
+  package main;
+
+  my $cmd = MyFoo->new_with_cmd;
+
+=head2 using role and don't execute immediately
+
+  package MyFoo;
+
+  with MooX::Cmd::Role;
+  use List::MoreUtils qw/ first_idx /;
+
+  sub _build_command_base { "MyFoo::Command" }
+
+  sub _build_command_execute_from_new { 0 }
+
+  sub execute {
+      my $self = shift;
+      my $chain_idx = first_idx { $self == $_ } @{$self->command_chain};
+      my $next_cmd = $self->command_chain->{$chain_idx+1};
+      $next_cmd->owner($self);
+      $next_cmd->execute;
+  }
+
+  package main;
+
+  my $cmd = MyFoo->new_with_cmd;
+  $cmd->command_chain->[-1]->run();
+
+=head2 explicitely expression of some implicit stuff
+
   package MyFoo;
 
   with MooX::Cmd::Role;
@@ -53,6 +91,16 @@ ARRAY-REF of commands lead to this instance
 =cut
 
 has 'command_chain' => ( is => "ro" );
+
+=head2 command_chain_end
+
+COMMAND accesses the finally detected command in chain
+
+=cut
+
+has 'command_chain_end' => ( is => "lazy" );
+
+sub _build_command_chain_end { $_[0]->command_chain->[-1] }
 
 =head2 command_name
 
