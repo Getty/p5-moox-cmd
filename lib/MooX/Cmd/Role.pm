@@ -244,13 +244,13 @@ sub _initialize_from_cmd
 	});
 
 	my @args = $opts_record->records(join(' ',@ARGV));
-	my @used_args;
-	my $cmd;
+	my (@used_args, $cmd, $cmd_name);
 
 	defined $params{command_commands} or $params{command_commands} = $class->_build_command_commands(%params);
 	while (my $arg = shift @args) {
 		push @used_args, $arg and next unless $cmd = $params{command_commands}->{$arg};
 
+		my $cmd_name = $arg; # be careful about relics
 		use_module( $cmd );
 		$cmd->can($execute_method_name)
 		  or croak "you need an '".$execute_method_name."' function in ".$cmd;
@@ -266,7 +266,7 @@ sub _initialize_from_cmd
 	@ARGV = @used_args;
 	$params{command_args} = [ @args ];
 	$params{command_chain} = \@moox_cmd_chain; # later modification hopefully will modify ...
-	$params{command_name} = $cmd;
+	$params{command_name} = $cmd_name;
 	my $self = $creation_method->($class, %params);
 	$cmd and push @moox_cmd_chain, $self;
 
