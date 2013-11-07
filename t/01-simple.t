@@ -11,6 +11,7 @@ use lib "$Bin/lib";
 
 use FirstTestApp;
 use SecondTestApp;
+use FailTestApp;
 
 my @tests = (
 	[ 'test', [ "FirstTestApp::Cmd::Test", [], [ "FirstTestApp" ] ] ],
@@ -29,10 +30,22 @@ for (@tests) {
 	# my $app = FirstTestApp->new_with_cmd;
 	# isa_ok($app,'FirstTestApp');
 	#my @execute_return = @{$app->execute_return};
+	"ARRAY" eq ref $rv->execute_rv or diag(explain($rv));
 	my @execute_return = @{$rv->execute_rv};
 	my @moox_cmd_chain = map { ref $_ } @{$execute_return[2]};
 	my $execute_result = [ref $execute_return[0],$execute_return[1],\@moox_cmd_chain];
 	is_deeply($execute_result,$result,'Checking result of "'.join(" ", @$args).'"');
+}
+
+{
+	my $rv = test_cmd_ok( FailTestApp => [qw(nothing)] );
+	like( $rv->error, qr/need.*execute.*nothing/, "Load fails for FailTestApp => [nothing]" );
+}
+
+{
+	my $rv = test_cmd_ok( SecondTestApp => [] );
+	my @execute_return = @{$rv->execute_rv};
+	is_deeply(\@execute_return,[],'Checking result of "SecondTestApp => []"');
 }
 
 done_testing;

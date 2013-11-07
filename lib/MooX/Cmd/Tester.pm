@@ -53,6 +53,7 @@ sub test_cmd_ok
     if($rv and !$rv->error and $rv->cmd)
     {
 	my $test_ident = $rv->app . " => [ " . join( " ", @{$_[1]} ) . " ]";
+	$rv->cmd->command_name and
 	ok($rv->cmd->command_commands->{$rv->cmd->command_name}, "found command at $test_ident");
     }
 
@@ -81,9 +82,11 @@ sub _run_with_capture
         ref $app and $app = ref $app;
         my $test_ident = "$app => [ " . join( " ", @$argv ) . " ]";
         ok( $cmd->isa($app),    "got a '$app' from new_with_cmd" );
-        ok( $cmd->command_name, "proper cmd name from $test_ident" );
+        @$argv and ok( $cmd->command_name, "proper cmd name from $test_ident" );
         ok( scalar @{ $cmd->command_chain } <= scalar @$argv,
             "\$#argv vs. command chain length testing $test_ident" );
+	@$argv and ok( $cmd->command_chain_end == $cmd->command_chain->[-1],
+	    "command_chain_end ok");
         $cmd->command_execute_from_new
           or $cmd->can( $cmd->command_execute_method_name )->($cmd);
 	my @execute_return = @{ $cmd->can($cmd->command_execute_return_method_name)->($cmd) };

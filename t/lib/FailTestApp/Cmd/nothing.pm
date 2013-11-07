@@ -1,0 +1,3 @@
+package FailTestApp;
+
+1;

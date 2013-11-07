@@ -12,7 +12,8 @@ use Regexp::Common;
 use Data::Record;
 use Module::Pluggable::Object;
 
-use List::Util qw /first/;
+use List::Util qw/first/;
+use Scalar::Util qw/blessed/;
 use Params::Util qw/_ARRAY/;
 
 =head1 SYNOPSIS
@@ -120,15 +121,15 @@ has 'command_commands' => ( is => "lazy" );
 
 sub _build_command_commands
 {
-	my ($class, %params) = @_;
-	ref $class and $class = ref $class;
-	my $base = defined $params{command_base} ? $params{command_base} : $class->_build_command_base(%params);
+	my ($class, $params) = @_;
+	defined $params->{command_base} or $params->{command_base} = $class->_build_command_base($params);
+	my $base = $params->{command_base};
 
 	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
 	my @cmd_plugins = grep {
-		my $class = $_;
-		$class =~ s/${base}:://;
-		$class !~ /:/;
+		my $plug_class = $_;
+		$plug_class =~ s/${base}:://;
+		$plug_class !~ /:/;
 	} Module::Pluggable::Object->new(
 		search_path => $base,
 		require => 0,
@@ -153,8 +154,7 @@ has command_base => ( is => "lazy" );
 
 sub _build_command_base
 {
-    my $class = shift;
-    ref $class and $class = ref $class;
+    my $class = blessed $_[0] || $_[0];
     return $class . '::Cmd'
 }
 
@@ -216,10 +216,7 @@ initializes by searching command line args for commands and invoke them
 
 =cut
 
-sub new_with_cmd
-{
-    goto &_initialize_from_cmd;
-}
+sub new_with_cmd { goto &_initialize_from_cmd; }
 
 sub _mkcommand {
 	my ( $package, $base ) = @_;
@@ -229,12 +226,33 @@ sub _mkcommand {
 
 my @private_init_params = qw(command_base command_execute_method_name command_execute_return_method_name command_creation_chain_methods command_execute_method_name);
 
+my $required_method = sub {
+	my ($tgt, $method) = @_;
+	$tgt->can($method) or croak("You need an '$method' in " . (blessed $tgt || $tgt));
+};
+
+my $call_required_method = sub {
+	my ($tgt, $method, @args) = @_;
+	my $m = $required_method->($tgt, $method);
+	return $m->($tgt, @args);
+};
+
+my $call_optional_method = sub {
+	my ($tgt, $method, @args) = @_;
+	my $m = $tgt->can($method) or return;
+	return $m->($tgt, @args);
+};
+
+my $call_indirect_method = sub {
+	my ($tgt, $name_getter, @args) = @_;
+	my $g = $call_required_method->($tgt, $name_getter);
+	my $m = $required_method->($tgt, $g);
+	return $m->($tgt, @args);
+};
+
 sub _initialize_from_cmd
 {
 	my ( $class, %params ) = @_;
-
-	defined $params{command_execute_method_name} or $params{command_execute_method_name} = $class->_build_command_execute_method_name(%params);
-	my $execute_method_name = $params{command_execute_method_name};
 
 	my @moox_cmd_chain = defined $params{__moox_cmd_chain} ? @{$params{__moox_cmd_chain}} : ();
 
@@ -246,18 +264,24 @@ sub _initialize_from_cmd
 	my @args = $opts_record->records(join(' ',@ARGV));
 	my (@used_args, $cmd, $cmd_name);
 
-	defined $params{command_commands} or $params{command_commands} = $class->_build_command_commands(%params);
+	my %cmd_create_params = %params;
+	delete @cmd_create_params{qw(command_commands), @private_init_params};
+
+	defined $params{command_commands} or $params{command_commands} = $class->_build_command_commands(\%params);
 	while (my $arg = shift @args) {
 		push @used_args, $arg and next unless $cmd = $params{command_commands}->{$arg};
 
 		$cmd_name = $arg; # be careful about relics
 		use_module( $cmd );
-		$cmd->can($execute_method_name)
-		  or croak "you need an '".$execute_method_name."' function in ".$cmd;
+		defined $cmd_create_params{command_execute_method_name}
+		  or $cmd_create_params{command_execute_method_name} = $call_optional_method->($cmd, "_build_command_execute_method_name", \%cmd_create_params);
+		defined $cmd_create_params{command_execute_method_name} 
+		  or $cmd_create_params{command_execute_method_name} = "execute";
+		$required_method->($cmd, $cmd_create_params{command_execute_method_name});
 		last;
 	}
 
-	defined $params{command_creation_chain_methods} or $params{command_creation_chain_methods} = $class->_build_command_creation_chain_methods(%params);
+	defined $params{command_creation_chain_methods} or $params{command_creation_chain_methods} = $class->_build_command_creation_chain_methods(\%params);
 	my @creation_chain = _ARRAY($params{command_creation_chain_methods}) ? @{$params{command_creation_chain_methods}} : ($params{command_creation_chain_methods});
 	my $creation_method_name = first { $class->can($_) } @creation_chain;
 	croak "cant find a creation method on " . $class unless $creation_method_name;
@@ -272,32 +296,30 @@ sub _initialize_from_cmd
 
 	my @execute_return;
 
-	defined $params{command_execute_return_method_name} or $params{command_execute_return_method_name} = $class->_build_command_execute_return_method_name(%params);
+	defined $params{command_execute_return_method_name}
+	  or $params{command_execute_return_method_name} = $class->_build_command_execute_return_method_name(\%params);
 	if ($cmd) {
 		@ARGV = @args;
-		defined $params{command_creation_method_name} or $params{command_creation_method_name}  = $class->_build_command_creation_method_name(%params);
+		defined $params{command_creation_method_name} or $params{command_creation_method_name} = $class->_build_command_creation_method_name(\%params);
 		my ($creation_method,$creation_method_name,$cmd_plugin);
-		$cmd->can("_build_command_creation_method_name") and $creation_method_name = $cmd->_build_command_creation_method_name(%params);
+		$cmd->can("_build_command_creation_method_name") and $creation_method_name = $cmd->_build_command_creation_method_name(\%params);
 		$creation_method_name and $creation_method = $cmd->can($creation_method_name);
 		if ($creation_method) {
-			my %cmd_create_params = %params;
 			$cmd_create_params{__moox_cmd_chain} = \@moox_cmd_chain;
-			delete @cmd_create_params{qw(command_commands), @private_init_params};
 			$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
-			@execute_return = @{$cmd_plugin->can($cmd_plugin->command_execute_return_method_name)->($cmd_plugin)};
+			@execute_return = @{ $call_indirect_method->($cmd_plugin, "command_execute_return_method_name") };
 		} else {
-			$creation_method_name = first { $class->can($_) } @creation_chain;
+			$creation_method_name = first { $cmd->can($_) } @creation_chain;
 			croak "cant find a creation method on " . $cmd unless $creation_method_name;
-			$creation_method = $class->can($creation_method_name); # XXX this is a perfect candidate for a new function in List::MoreUtils
+			$creation_method = $cmd->can($creation_method_name); # XXX this is a perfect candidate for a new function in List::MoreUtils
 			$cmd_plugin = $creation_method->($cmd);
-			defined $params{command_execute_from_new} or $params{command_execute_from_new} = $class->_build_command_execute_from_new(%params);
+			defined $params{command_execute_from_new} or $params{command_execute_from_new} = $class->_build_command_execute_from_new(\%params);
 			$params{command_execute_from_new}
-			  and @execute_return = $cmd_plugin->$execute_method_name(\@ARGV,\@moox_cmd_chain);
+			  and @execute_return = $call_required_method->($cmd_plugin, $cmd_create_params{command_execute_method_name}, \@ARGV,\@moox_cmd_chain);
 		}
 	} else {
-		defined $params{command_execute_from_new} or $params{command_execute_from_new} = $class->_build_command_execute_from_new(%params);
-		$params{command_execute_from_new}
-		  and @execute_return = $self->$execute_method_name(\@ARGV,\@moox_cmd_chain);
+		$self->command_execute_from_new
+		  and @execute_return = $call_indirect_method->($self, "command_execute_method_name", \@ARGV, \@moox_cmd_chain);
 	}
 
 	$self->{$params{command_execute_return_method_name}} = \@execute_return;
