@@ -1,2 +1,4 @@
 MooX-Cmd-*
 .build
+*.bak
+*.swp
