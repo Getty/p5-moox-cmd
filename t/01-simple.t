@@ -22,14 +22,14 @@ my @tests = (
 for (@tests) {
 	my ( $args, $result ) = @{$_};
 	ref $args or $args = [split(' ', $args)];
-	my $rv = test_cmd( FirstTestApp => $args );
+	my $rv = test_cmd_ok( FirstTestApp => $args );
 	# my $app = FirstTestApp->new_with_cmd;
 	# isa_ok($app,'FirstTestApp');
 	#my @execute_return = @{$app->execute_return};
 	my @execute_return = @{$rv->execute_rv};
 	my @moox_cmd_chain = map { ref $_ } @{$execute_return[2]};
 	my $execute_result = [ref $execute_return[0],$execute_return[1],\@moox_cmd_chain];
-	is_deeply($execute_result,$result,'Checking result of "'.$args.'"');
+	is_deeply($execute_result,$result,'Checking result of "'.join(" ", @$args).'"');
 }
 
 done_testing;

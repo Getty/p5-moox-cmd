@@ -9,8 +9,8 @@ use Package::Stash;
 
 use parent qw(Test::Builder::Module Exporter);
 
-our @EXPORT    = qw(test_cmd);
-our @EXPORT_OK = qw(test_cmd);
+our @EXPORT    = qw(test_cmd test_cmd_ok);
+our @EXPORT_OK = qw(test_cmd test_cmd_ok);
 
 our $TEST_IN_PROGRESS;
 my $CLASS = __PACKAGE__;
@@ -39,11 +39,20 @@ sub test_cmd
 
     result_class->new(
                        {
-                         app       => $app,
                          exit_code => $exit_code,
                          %$result,
                        }
                      );
+}
+
+sub test_cmd_ok
+{
+    my $rv = test_cmd(@_);
+
+    my $test_ident = $rv->app . " => [ " . join( " ", @{$_[1]} ) . " ]";
+    ok($rv->cmd->command_commands->{$rv->cmd->command_name}, "found command at $test_ident");
+
+    $rv;
 }
 
 sub _run_with_capture
@@ -56,19 +65,24 @@ sub _run_with_capture
     my $stdout = tie local *STDOUT, $hub, 'stdout';
     my $stderr = tie local *STDERR, $hub, 'stderr';
 
-    my $execute_rv;
+    my ( $execute_rv, $cmd );
 
     my $ok = eval {
         local $TEST_IN_PROGRESS = 1;
         local @ARGV             = @$argv;
 
-	my $tb = $CLASS->builder();
+        my $tb = $CLASS->builder();
 
-        my $cmd = ref $app ? $app : $app->new_with_cmd;
-	ok($cmd->isa($app), "got a $app from new_with_cmd");
+        $cmd = ref $app ? $app : $app->new_with_cmd;
+        ref $app and $app = ref $app;
+        my $test_ident = "$app => [ " . join( " ", @$argv ) . " ]";
+        ok( $cmd->isa($app),    "got a '$app' from new_with_cmd" );
+        ok( $cmd->command_name, "proper cmd name from $test_ident" );
+        ok( scalar @{ $cmd->command_chain } <= scalar @$argv,
+            "\$#argv vs. command chain length testing $test_ident" );
         $cmd->command_execute_from_new
           or $cmd->can( $cmd->command_execute_method_name )->();
-	my @execute_return = @{$cmd->execute_return};
+        my @execute_return = @{ $cmd->execute_return };
         $execute_rv = \@execute_return;
         1;
     };
@@ -76,6 +90,8 @@ sub _run_with_capture
     my $error = $ok ? undef : $@;
 
     return {
+             app        => $app,
+             cmd        => $cmd,
              stdout     => $hub->slot_contents('stdout'),
              stderr     => $hub->slot_contents('stderr'),
              output     => $hub->combined_contents,
@@ -96,7 +112,7 @@ sub _run_with_capture
 }
 
 my $res = Package::Stash->new("MooX::Cmd::Tester::Result");
-for my $attr (qw(app stdout stderr output error execute_rv exit_code))
+for my $attr (qw(app cmd stdout stderr output error execute_rv exit_code))
 {
     $res->add_symbol( '&' . $attr, sub { $_[0]->{$attr} } );
 }
