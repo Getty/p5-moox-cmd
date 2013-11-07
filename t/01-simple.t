@@ -10,6 +10,7 @@ use FindBin qw($Bin);
 use lib "$Bin/lib";
 
 use FirstTestApp;
+use SecondTestApp;
 
 my @tests = (
 	[ 'test', [ "FirstTestApp::Cmd::Test", [], [ "FirstTestApp" ] ] ],
@@ -17,12 +18,14 @@ my @tests = (
 	[ 'test this', [ "FirstTestApp::Cmd::Test", [ "this" ], [ "FirstTestApp" ] ] ],
 	[ 'this test test this', [ "FirstTestApp::Cmd::Test::Cmd::Test", [ "this" ], [ "FirstTestApp","FirstTestApp::Cmd::Test" ] ] ],
 	[ 'test this test', [ "FirstTestApp::Cmd::Test::Cmd::Test", [], [ "FirstTestApp","FirstTestApp::Cmd::Test" ] ] ],
+	[ 'ifc', [ "SecondTestApp::Cmd::ifc", [], [ "SecondTestApp" ] ] ],
+	[ 'cwo', [ "SecondTestApp::Cmd::cwo", [], [ "SecondTestApp" ] ] ],
 );
 
 for (@tests) {
 	my ( $args, $result ) = @{$_};
 	ref $args or $args = [split(' ', $args)];
-	my $rv = test_cmd_ok( FirstTestApp => $args );
+	my $rv = test_cmd_ok( $result->[2]->[0] => $args );
 	# my $app = FirstTestApp->new_with_cmd;
 	# isa_ok($app,'FirstTestApp');
 	#my @execute_return = @{$app->execute_return};

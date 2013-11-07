@@ -40,7 +40,7 @@ sub import {
 		execute_method_name => '_build_command_execute_method_name',
 		execute_return_method_name => '_build_command_execute_return_method_name',
 		creation_chain_methods => '_build_command_creation_chain_methods',
-		creation_method_name => '_build_command_execute_method_name',
+		creation_method_name => '_build_command_creation_method_name',
 		execute_from_new => '_build_command_execute_from_new',
 	);
 

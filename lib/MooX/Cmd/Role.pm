@@ -276,14 +276,15 @@ sub _initialize_from_cmd
 	if ($cmd) {
 		@ARGV = @args;
 		defined $params{command_creation_method_name} or $params{command_creation_method_name}  = $class->_build_command_creation_method_name(%params);
-		my $creation_method = $cmd->can($params{command_creation_method_name});
-		my $cmd_plugin;
+		my ($creation_method,$creation_method_name,$cmd_plugin);
+		$cmd->can("_build_command_creation_method_name") and $creation_method_name = $cmd->_build_command_creation_method_name(%params);
+		$creation_method_name and $creation_method = $cmd->can($creation_method_name);
 		if ($creation_method) {
 			my %cmd_create_params = %params;
 			$cmd_create_params{__moox_cmd_chain} = \@moox_cmd_chain;
 			delete @cmd_create_params{qw(command_commands), @private_init_params};
 			$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
-			@execute_return = @{$cmd_plugin->{$params{command_execute_return_method_name}}};
+			@execute_return = @{$cmd_plugin->can($cmd_plugin->command_execute_return_method_name)->($cmd_plugin)};
 		} else {
 			$creation_method_name = first { $class->can($_) } @creation_chain;
 			croak "cant find a creation method on " . $cmd unless $creation_method_name;

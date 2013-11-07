@@ -85,8 +85,8 @@ sub _run_with_capture
         ok( scalar @{ $cmd->command_chain } <= scalar @$argv,
             "\$#argv vs. command chain length testing $test_ident" );
         $cmd->command_execute_from_new
-          or $cmd->can( $cmd->command_execute_method_name )->();
-        my @execute_return = @{ $cmd->execute_return };
+          or $cmd->can( $cmd->command_execute_method_name )->($cmd);
+	my @execute_return = @{ $cmd->can($cmd->command_execute_return_method_name)->($cmd) };
         $execute_rv = \@execute_return;
         1;
     };
