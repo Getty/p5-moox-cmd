@@ -11,6 +11,7 @@ use lib "$Bin/lib";
 
 use FirstTestApp;
 use SecondTestApp;
+use ThirdTestApp;
 use FailTestApp;
 
 my @tests = (
@@ -38,14 +39,24 @@ for (@tests) {
 }
 
 {
+	my $rv = test_cmd_ok( ThirdTestApp => [qw(foo)] );
+	my $nothing;
+	is_deeply(\$nothing,\$rv->{execute_return},'Checking result of "ThirdTestApp => [foo]"');
+}
+
+{
 	my $rv = test_cmd_ok( FailTestApp => [qw(nothing)] );
 	like( $rv->error, qr/need.*execute.*nothing/, "Load fails for FailTestApp => [nothing]" );
 }
 
 {
-	my $rv = test_cmd_ok( SecondTestApp => [] );
-	my @execute_return = @{$rv->execute_rv};
-	is_deeply(\@execute_return,[],'Checking result of "SecondTestApp => []"');
+	my $rv = test_cmd_ok( FailTestApp => [qw(uncreatable)] );
+	like( $rv->error, qr/Can't find a creation method/, "Load fails for FailTestApp => [nothing]" );
+}
+
+{
+	my $rv = test_cmd_ok( FailTestApp => [qw(nocreatable)] );
+	like( $rv->error, qr/Can't find a creation method/, "Load fails for FailTestApp => [nothing]" );
 }
 
 done_testing;

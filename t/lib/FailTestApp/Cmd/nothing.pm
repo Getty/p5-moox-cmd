@@ -1,3 +1,3 @@
-package FailTestApp;
+package FailTestApp::Cmd::nothing;
 
 1;

@@ -283,8 +283,8 @@ sub _initialize_from_cmd
 
 	defined $params{command_creation_chain_methods} or $params{command_creation_chain_methods} = $class->_build_command_creation_chain_methods(\%params);
 	my @creation_chain = _ARRAY($params{command_creation_chain_methods}) ? @{$params{command_creation_chain_methods}} : ($params{command_creation_chain_methods});
-	my $creation_method_name = first { $class->can($_) } @creation_chain;
-	croak "cant find a creation method on " . $class unless $creation_method_name;
+	my $creation_method_name = first { defined $_ and $class->can($_) } @creation_chain;
+	croak "Can't find a creation method on " . $class unless $creation_method_name;
 	my $creation_method = $class->can($creation_method_name); # XXX this is a perfect candidate for a new function in List::MoreUtils
 
 	@ARGV = @used_args;
@@ -300,7 +300,6 @@ sub _initialize_from_cmd
 	  or $params{command_execute_return_method_name} = $class->_build_command_execute_return_method_name(\%params);
 	if ($cmd) {
 		@ARGV = @args;
-		defined $params{command_creation_method_name} or $params{command_creation_method_name} = $class->_build_command_creation_method_name(\%params);
 		my ($creation_method,$creation_method_name,$cmd_plugin);
 		$cmd->can("_build_command_creation_method_name") and $creation_method_name = $cmd->_build_command_creation_method_name(\%params);
 		$creation_method_name and $creation_method = $cmd->can($creation_method_name);
@@ -310,7 +309,7 @@ sub _initialize_from_cmd
 			@execute_return = @{ $call_indirect_method->($cmd_plugin, "command_execute_return_method_name") };
 		} else {
 			$creation_method_name = first { $cmd->can($_) } @creation_chain;
-			croak "cant find a creation method on " . $cmd unless $creation_method_name;
+			croak "Can't find a creation method on " . $cmd unless $creation_method_name;
 			$creation_method = $cmd->can($creation_method_name); # XXX this is a perfect candidate for a new function in List::MoreUtils
 			$cmd_plugin = $creation_method->($cmd);
 			defined $params{command_execute_from_new} or $params{command_execute_from_new} = $class->_build_command_execute_from_new(\%params);
