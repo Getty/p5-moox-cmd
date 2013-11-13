@@ -16,9 +16,12 @@ BEGIN {
 }
 
 my @tests = (
-    [ [ qw(--help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: \E(?:oops|primary)} ],
-    [ [ qw(primary --help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t primary [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: secondary\E} ],
-    [ [ qw(primary secondary --help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t primary secondary [-h]\E} ],
+    [ [ qw(--help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: \E(?:oops|primary)} ],
+    [ [ qw(--in-doubt) ], "OptionTestApp", []  ],
+    [ [ qw(primary --help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t primary [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: secondary\E} ],
+    [ [ qw(primary --serious) ], "OptionTestApp", [ qw(OptionTestApp) ] ],
+    [ [ qw(primary secondary --help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t primary secondary [-h]\E} ],
+    [ [ qw(primary secondary --sure) ], "OptionTestApp", [ qw(OptionTestApp OptionTestApp::Cmd::primary) ] ],
 );
 
 for (@tests) {
@@ -27,9 +30,15 @@ for (@tests) {
 	my $rv = test_cmd( $class => $args );
 
 	my $test_ident = "$class => " . join(" ", "[", @$args, "]");
-	like( $rv->stdout, $help, "test '$test_ident' help message ok" );
+	$help and like( $rv->stdout, $help, "test '$test_ident' help message" );
+	$help or unlike( $rv->stdout, qr{\QUSAGE: 02-moox-options.t\E}, "test '$test_ident' no help message" );
 	$avail and like( $rv->stdout, $avail, "test '$test_ident' avail commands ok" );
-	$avail or unlike( $rv->stdout, qr{\QAvailable commands\E}, "test '$test_ident' avail commands ok" );
+	$avail or unlike( $rv->stdout, qr{\QAvailable commands\E}, "test '$test_ident' no avail commands" );
+
+	if(defined($rv->cmd)) {
+		my @cmd_chain = map { ref $_ } @{$rv->cmd->command_chain};
+		is_deeply(\@cmd_chain, $chain, "test '$test_ident' command chain ok");
+	}
 }
 
 done_testing;

@@ -10,7 +10,7 @@ use MooX::Options;
 option sure => (
     is => "ro",
     negativable => 1,
-    required => 0,
+    required => 1,
     doc => "sure?",
 );
 

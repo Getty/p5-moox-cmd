@@ -254,8 +254,6 @@ sub _initialize_from_cmd
 {
 	my ( $class, %params ) = @_;
 
-	my @moox_cmd_chain = defined $params{__moox_cmd_chain} ? @{$params{__moox_cmd_chain}} : ();
-
 	my $opts_record = Data::Record->new({
 		split  => qr{\s+},
 		unless => $RE{quoted},
@@ -289,10 +287,10 @@ sub _initialize_from_cmd
 
 	@ARGV = @used_args;
 	$params{command_args} = [ @args ];
-	$params{command_chain} = \@moox_cmd_chain; # later modification hopefully will modify ...
 	$params{command_name} = $cmd_name;
+	defined $params{command_chain} or $params{command_chain} = [];
 	my $self = $creation_method->($class, %params);
-	$cmd and push @moox_cmd_chain, $self;
+	$cmd and push @{$self->command_chain}, $self;
 
 	my @execute_return;
 
@@ -304,7 +302,7 @@ sub _initialize_from_cmd
 		$cmd->can("_build_command_creation_method_name") and $creation_method_name = $cmd->_build_command_creation_method_name(\%params);
 		$creation_method_name and $creation_method = $cmd->can($creation_method_name);
 		if ($creation_method) {
-			$cmd_create_params{__moox_cmd_chain} = \@moox_cmd_chain;
+			@cmd_create_params{qw(command_chain)} = @params{qw(command_chain)};
 			$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
 			@execute_return = @{ $call_indirect_method->($cmd_plugin, "command_execute_return_method_name") };
 		} else {
@@ -314,11 +312,11 @@ sub _initialize_from_cmd
 			$cmd_plugin = $creation_method->($cmd);
 			defined $params{command_execute_from_new} or $params{command_execute_from_new} = $class->_build_command_execute_from_new(\%params);
 			$params{command_execute_from_new}
-			  and @execute_return = $call_required_method->($cmd_plugin, $cmd_create_params{command_execute_method_name}, \@ARGV,\@moox_cmd_chain);
+			  and @execute_return = $call_required_method->($cmd_plugin, $cmd_create_params{command_execute_method_name}, \@ARGV, $self->command_chain);
 		}
 	} else {
 		$self->command_execute_from_new
-		  and @execute_return = $call_indirect_method->($self, "command_execute_method_name", \@ARGV, \@moox_cmd_chain);
+		  and @execute_return = $call_indirect_method->($self, "command_execute_method_name", \@ARGV, $self->command_chain);
 	}
 
 	$self->{$params{command_execute_return_method_name}} = \@execute_return;
