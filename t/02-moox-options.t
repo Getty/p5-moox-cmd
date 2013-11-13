@@ -11,8 +11,8 @@ use FindBin qw($Bin);
 use lib "$Bin/lib";
 
 BEGIN {
-    eval "use MooX::Options 3.97; use OptionTestApp";
-    $@ and plan skip_all => "Need MooX::Options 3.98 $@" and exit(0);
+    eval "use MooX::Options 3.99; use OptionTestApp";
+    $@ and plan skip_all => "Need MooX::Options 3.99 $@" and exit(0);
 }
 
 my @tests = (
