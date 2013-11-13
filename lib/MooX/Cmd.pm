@@ -162,4 +162,20 @@ Issue Tracker
 
   http://github.com/Getty/p5-moox-cmd/issues
 
+=head1 THANKS
 
+=over
+
+=item Lukas Mai (mauke), Toby Inkster (tobyink)
+
+Gave some helpful advice for solving difficult issues
+
+=item Celogeek San
+
+Integration into MooX::Options for better help messages and suit team play
+
+=item Torsten Raudssus (Getty)
+
+did the initial work and brought it to CPAN
+
+=back
