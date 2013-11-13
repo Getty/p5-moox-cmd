@@ -12,12 +12,12 @@ use lib "$Bin/lib";
 
 BEGIN {
     eval "use MooX::Options 3.97; use OptionTestApp";
-    $@ and plan skip_all => "Need MooX::Options 3.97 $@" and exit(0);
+    $@ and plan skip_all => "Need MooX::Options 3.98 $@" and exit(0);
 }
 
 my @tests = (
-    [ [ qw(--help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t [-h]\E}, qr{\QAvailable commands: \E(?:oops|primary)} ],
-    [ [ qw(primary --help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t primary [-h]\E}, qr{\QAvailable commands: secondary\E} ],
+    [ [ qw(--help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: \E(?:oops|primary)} ],
+    [ [ qw(primary --help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t primary [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: secondary\E} ],
     [ [ qw(primary secondary --help) ], "OptionTestApp", [ qw(OptionTestApp) ], qr{\QUSAGE: 02-moox-options.t primary secondary [-h]\E} ],
 );
 
