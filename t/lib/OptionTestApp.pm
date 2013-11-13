@@ -3,7 +3,11 @@ package OptionTestApp;
 use strict;
 use warnings;
 
-use Moo;
+BEGIN {
+    my $moodel = $ENV{WHICH_MOODEL} || "Moo";
+    eval "use $moodel;"; $@ and die $@;
+    $moodel->import;
+}
 use MooX::Cmd execute_from_new => undef;
 use MooX::Options;
 
