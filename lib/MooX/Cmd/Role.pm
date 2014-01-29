@@ -294,8 +294,6 @@ sub _initialize_from_cmd
 
 	my @execute_return;
 
-	defined $params{command_execute_return_method_name}
-	  or $params{command_execute_return_method_name} = $class->_build_command_execute_return_method_name(\%params);
 	if ($cmd) {
 		@ARGV = @args;
 		my ($creation_method,$creation_method_name,$cmd_plugin);
@@ -319,7 +317,7 @@ sub _initialize_from_cmd
 		  and @execute_return = $call_indirect_method->($self, "command_execute_method_name", \@ARGV, $self->command_chain);
 	}
 
-	$self->{$params{command_execute_return_method_name}} = \@execute_return;
+	$self->{$self->command_execute_return_method_name} = \@execute_return;
 
 	return $self;
 }
