@@ -49,12 +49,13 @@ sub test_cmd_ok
 {
     my $rv = test_cmd(@_);
 
+    my $test_ident = $rv->app . " => [ " . join( " ", @{$_[1]} ) . " ]";
+    ok(!$rv->error, "Everythink ok running cmd $test_ident") or diag($rv->error);
     # no error and cmd means, we're reasonable successful so far
     if($rv and !$rv->error and $rv->cmd)
     {
-	my $test_ident = $rv->app . " => [ " . join( " ", @{$_[1]} ) . " ]";
 	$rv->cmd->command_name and
-	ok($rv->cmd->command_commands->{$rv->cmd->command_name}, "found command at $test_ident");
+	  ok($rv->cmd->command_commands->{$rv->cmd->command_name}, "found command at $test_ident");
     }
 
     $rv;

@@ -45,17 +45,17 @@ for (@tests) {
 }
 
 {
-	my $rv = test_cmd_ok( FailTestApp => [qw(nothing)] );
+	my $rv = test_cmd( FailTestApp => [qw(nothing)] );
 	like( $rv->error, qr/need.*execute.*nothing/, "Load fails for FailTestApp => [nothing]" );
 }
 
 {
-	my $rv = test_cmd_ok( FailTestApp => [qw(uncreatable)] );
+	my $rv = test_cmd( FailTestApp => [qw(uncreatable)] );
 	like( $rv->error, qr/Can't find a creation method/, "Load fails for FailTestApp => [nothing]" );
 }
 
 {
-	my $rv = test_cmd_ok( FailTestApp => [qw(nocreatable)] );
+	my $rv = test_cmd( FailTestApp => [qw(nocreatable)] );
 	like( $rv->error, qr/Can't find a creation method/, "Load fails for FailTestApp => [nothing]" );
 }
 
