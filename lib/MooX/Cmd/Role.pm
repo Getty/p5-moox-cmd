@@ -9,7 +9,7 @@ use Moo::Role;
 use Carp;
 use Module::Runtime qw/ use_module /;
 use Regexp::Common;
-use Data::Record;
+use Text::ParseWords 'shellwords';
 use Module::Pluggable::Object;
 
 use List::Util qw/first/;
@@ -254,12 +254,8 @@ sub _initialize_from_cmd
 {
 	my ( $class, %params ) = @_;
 
-	my $opts_record = Data::Record->new({
-		split  => qr{\s+},
-		unless => $RE{quoted},
-	});
+	my @args = shellwords( join ' ', map { quotemeta } @ARGV );
 
-	my @args = $opts_record->records(join(' ',@ARGV));
 	my (@used_args, $cmd, $cmd_name);
 
 	my %cmd_create_params = %params;
