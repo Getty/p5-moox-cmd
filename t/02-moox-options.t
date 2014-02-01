@@ -17,11 +17,11 @@ BEGIN {
 
 my @tests = (
     [ [ qw(--help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: \E(?:oops|primary)} ],
-    [ [ qw(--in-doubt) ], "OptionTestApp", []  ],
+    [ [ qw(--in-doubt) ], "OptionTestApp", [ qw(OptionTestApp) ]  ],
     [ [ qw(primary --help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t primary [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: secondary\E} ],
-    [ [ qw(primary --serious) ], "OptionTestApp", [ qw(OptionTestApp) ] ],
-    [ [ qw(primary secondary --help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t primary secondary [-h]\E} ],
-    [ [ qw(primary secondary --sure) ], "OptionTestApp", [ qw(OptionTestApp OptionTestApp::Cmd::primary) ] ],
+    [ [ qw(primary --serious) ], "OptionTestApp", [ qw(OptionTestApp OptionTestApp::Cmd::primary) ] ],
+    [ [ qw(--in-doubt primary secondary --help) ], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t primary secondary [-h]\E} ],
+    [ [ qw(primary secondary --sure) ], "OptionTestApp", [ qw(OptionTestApp OptionTestApp::Cmd::primary OptionTestApp::Cmd::primary::Cmd::secondary) ] ],
 );
 
 for (@tests) {
