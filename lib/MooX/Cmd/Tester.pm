@@ -210,7 +210,7 @@ return values from execute
 
 =head3 exit_code
 
-0 on sucess, $! when error occured and $! available, -1 otherwise
+0 on success, $! when error occurred and $! available, -1 otherwise
 
 =head2 test_cmd_ok
 
@@ -221,12 +221,12 @@ command_commands, etc.
 
 Returns the same object C<test_cmd> returns.
 
-If an error occured, no additional test is done (behavior as C<test_cmd>).
+If an error occurred, no additional test is done (behavior as C<test_cmd>).
 
 =head1 ACKNOWLEDGEMENTS
 
 MooX::Cmd::Tester is I<inspired> by L<App::Cmd::Tester> from Ricardo Signes.
-In fact, I resused the entire design and adopt it to the requirements of
+In fact, I reused the entire design and adopt it to the requirements of
 MooX::Cmd.
 
 =cut
