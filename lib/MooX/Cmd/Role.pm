@@ -59,7 +59,7 @@ MooX::Cmd::Role - MooX cli app commands do this
   my $cmd = MyFoo->new_with_cmd;
   $cmd->command_chain->[-1]->run();
 
-=head2 explicitely expression of some implicit stuff
+=head2 explicit expression of some implicit stuff
 
   package MyFoo;
 
@@ -175,7 +175,7 @@ sub _build_command_execute_method_name { "execute" }
 
 =head2 command_execute_return_method_name
 
-STRING I have no clue what that is goood for ...
+STRING I have no clue what that is good for ...
 
 =cut
 
