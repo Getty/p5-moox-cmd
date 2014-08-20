@@ -146,10 +146,221 @@ sub import {
 
 =head1 DESCRIPTION
 
-Works together with L<MooX::Options> for every command on its own, so options are
+Eases the writing of command line utilities, accepting commands and
+subcommands and so on. These commands can form a tree, which is
+mirrored in the package structure. On invocation each command along
+the path through the tree (starting from the toplevel command
+through to the most specific one) is instanciated.
+
+Each command needs to have an C<execute> function, accepting three
+parameters:
+
+=over
+
+=item C<self>
+
+A reference to the specific L<MooX::Cmd> object that is executing.
+
+=item C<args>
+
+An ArrayRef of arguments passed to C<self>. This only encompasses
+arguments of the most specific (read: right-most) command.
+
+=item C<chain>
+
+An ArrayRef of C<MooX::Cmd>s along the tree path, as specified on
+the command line.
+
+=back
+
+B<Note that only the execute function of the most specific command is executed.>
+
+=head3 L<MooX::Cmd> Attributes
+
+Each command has some attributes set by L<MooX::Cmd> during
+initialization:
+
+=over
+
+=item C<command_chain>
+
+Same as C<chain> argument to C<execute>.
+
+=item C<command_name>
+
+TODO
+
+=item C<command_commands>
+
+TODO
+
+=item C<command_args>
+
+TODO
+
+=item C<command_base>
+
+TODO
+
+=back
+
+=head2 Examples
+
+=head3 A Single Toplevel Command
+
+  #!/usr/bin/env perl
+  package MyApp;
+  use Moo;
+  use MooX::Cmd;
+
+  sub execute {
+    my ($self,$args,$chain) = @_;
+    printf("%s.execute(\$self,[%s],[%s])\n",
+      ref($self),                       # which command is executing?
+      join(", ", @$args ),              # what where the arguments?
+      join(", ", map { ref } @$chain)   # what's in the command chain?
+    );
+  }
+
+  package main;
+  MyApp->new_with_cmd();
+
+Some sample invocations:
+
+ $ ./MyApp.pl
+ MyApp.execute($self,[],[MyApp])
+
+ $./MyApp.pl --opt1
+ MyApp.execute($self,[--opt1],[MyApp])
+
+ $ ./MyApp.pl --opt1 arg
+ MyApp.execute($self,[--opt1, arg],[MyApp])
+
+=head3 Toplevel Command with Subcommand
+
+  #!/usr/bin/env perl
+  # let's define a base class containing our generic execute
+  # function to save some typing...
+  package CmdBase;
+  use Moo;
+
+  sub execute {
+    my ($self,$args,$chain) = @_;
+    printf("%s.execute(\$self,[%s],[%s])\n",
+      ref($self),
+      join(", ", @$args ),
+      join(", ", map { ref } @$chain)
+    );
+  }
+
+  package MyApp;
+  # toplevel command/app
+  use Moo;
+  use MooX::Cmd;
+  extends 'CmdBase';
+
+  package MyApp::Cmd::frobnicate;
+  # can be called via ./MyApp.pl frobnicate
+  use Moo;
+  use MooX::Cmd;
+  extends 'CmdBase';
+
+  package main;
+  MyApp->new_with_cmd();
+
+And some sample invocations:
+
+  $ ./MyApp.pl frobnicate
+  MyApp::Cmd::frobnicate.execute($self,[],[MyApp, MyApp::Cmd::frobnicate])
+
+As you can see the chain contains our toplevel command object and
+then the specififc one.
+
+  $ ./MyApp.pl frobnicate arg1
+  MyApp::Cmd::frobnicate.execute($self,[arg1],[MyApp, MyApp::Cmd::frobnicate])
+
+Arguments are passed via the C<args> parameter.
+
+  $ ./MyApp.pl some --stuff frobnicate arg1
+  MyApp::Cmd::frobnicate.execute($self,[arg1],[MyApp, MyApp::Cmd::frobnicate])
+
+Arguments to commands higher in the tree get ignored if they don't
+match a command.
+
+=head3 Access Toplevel Attributes via Chain
+
+  #!/usr/bin/env perl
+  package CmdBase;
+  use Moo;
+
+  sub execute {
+    my ($self,$args,$chain) = @_;
+    printf("%s.execute(\$self,[%s],[%s])\n",
+      ref($self),
+      join(", ", @$args ),
+      join(", ", map { ref } @$chain)
+    );
+  }
+
+  package MyApp;
+  use Moo;
+  use MooX::Cmd;
+  extends 'CmdBase';
+
+  has somevar => ( is => 'ro', default => 'someval' );
+
+  package MyApp::Cmd::frobnicate;
+  use Moo;
+  use MooX::Cmd;
+  extends 'CmdBase';
+
+  around execute => sub {
+    my ($orig,$self,$args,$chain) = @_;
+    $self->$orig($args,$chain);
+    # we can access toplevel attributes via the chain...
+    printf("MyApp->somevar = '%s'\n", $chain->[0]->somevar);
+  };
+
+  package main;
+  MyApp->new_with_cmd();
+
+A sample invocation
+
+  $ ./MyApp.pl some --stuff frobnicate arg1
+  MyApp::Cmd::frobnicate.execute($self,[arg1],[MyApp, MyApp::Cmd::frobnicate])
+  MyApp->somevar = someval
+
+
+=head2 L<MooX::Options> integration
+
+You can integrate L<MooX::Options> simply by using it and declaring
+some options, like so:
+
+  #!/usr/bin/env perl
+  package MyApp;
+  use Moo;
+  use MooX::Cmd;
+  use MooX::Options;
+
+  option debug => ( is => 'ro' );
+
+  sub execute {
+    my ($self,$args,$chain) = @_;
+    print "debugging enabled!\n" if $self->{debug};
+  }
+
+  package main;
+  MyApp->new_with_cmd();
+
+A sample invocation
+
+  $ ./MyApp-Options.pl --debug
+  debugging enabled!
+
+B<Note, that each command and subcommand has its own options.>, so options are
 parsed for the specific context and used for the instantiation:
 
-  myapp --argformyapp command --argformyappcmdcommand ...
+  $ ./MyApp.pl --argformyapp command --argformyappcmdcommand ...
 
 =head1 SUPPORT
 
@@ -157,7 +368,7 @@ Repository
 
   http://github.com/Getty/p5-moox-cmd
   Pull request and additional contributors are welcome
- 
+
 Issue Tracker
 
   http://github.com/Getty/p5-moox-cmd/issues
