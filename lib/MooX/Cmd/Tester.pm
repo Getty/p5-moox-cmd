@@ -223,11 +223,26 @@ Returns the same object C<test_cmd> returns.
 
 If an error occurred, no additional test is done (behavior as C<test_cmd>).
 
+=head2 result_class
+
+Builder for result class to use. Returns C<MooX::Cmd::Tester::Result> by
+default.
+
 =head1 ACKNOWLEDGEMENTS
 
 MooX::Cmd::Tester is I<inspired> by L<App::Cmd::Tester> from Ricardo Signes.
 In fact, I reused the entire design and adopt it to the requirements of
 MooX::Cmd.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2014 Jens Rehsack.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
 
 =cut
 

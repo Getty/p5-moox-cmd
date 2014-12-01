@@ -339,4 +339,16 @@ returns the content of $self->{execute_return}
 # XXX should be an r/w attribute - can be renamed on loading ...
 sub execute_return { $_[0]->{execute_return} }
 
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2014 Jens Rehsack.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
+=cut
+
 1;

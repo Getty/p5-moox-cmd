@@ -378,6 +378,8 @@ Repository
 Issue Tracker
 
   http://github.com/Getty/p5-moox-cmd/issues
+  http://rt.cpan.org/NoAuth/Bugs.html?Dist=MooX-Cmd
+  bug-moox-cmd at rt.cpan.org
 
 =head1 THANKS
 
@@ -396,5 +398,15 @@ Integration into MooX::Options for better help messages and suit team play
 did the initial work and brought it to CPAN
 
 =back
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2014 Jens Rehsack.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
 
 =cut
