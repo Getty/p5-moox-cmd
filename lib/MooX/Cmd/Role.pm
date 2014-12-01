@@ -1,8 +1,9 @@
 package MooX::Cmd::Role;
-# ABSTRACT: MooX cli app commands do this
 
 use strict;
 use warnings;
+
+our $VERSION = "0.010";
 
 use Moo::Role;
 
@@ -15,6 +16,10 @@ use Module::Pluggable::Object;
 use List::Util qw/first/;
 use Scalar::Util qw/blessed/;
 use Params::Util qw/_ARRAY/;
+
+=head1 NAME
+
+MooX::Cmd::Role - MooX cli app commands do this
 
 =head1 SYNOPSIS
 

@@ -1,8 +1,10 @@
 package MooX::Cmd;
-# ABSTRACT: Giving an easy Moo style way to make command organized CLI apps
 
 use strict;
 use warnings;
+
+our $VERSION = "0.010";
+
 use Package::Stash;
 
 sub import {
@@ -57,6 +59,10 @@ sub import {
 1;
 
 =encoding utf8
+
+=head1 NAME
+
+MooX::Cmd - Giving an easy Moo style way to make command organized CLI apps
 
 =head1 SYNOPSIS
 
@@ -179,3 +185,5 @@ Integration into MooX::Options for better help messages and suit team play
 did the initial work and brought it to CPAN
 
 =back
+
+=cut
