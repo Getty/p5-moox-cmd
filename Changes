@@ -1,7 +1,13 @@
 Revision history for Perl module MooX::Cmd
 
-0.009 2014-02-08
+0.010 2014-12-02
+    - switch distribution tooling from Dist::Zilla to ExtUtils::MakeMaker
+    - Added Changes file with content based on git log according to
+      CPAN::Changes::Spec (Neil Bowers)
+    - Apply typo fixes for documentation from David Steinbrunner
+    - Sven Schober provided heavily improved description
 
+0.009 2014-02-08
     - Apply submitted fix for RT#91481 - without test ..
     - fix RT#91500 - incorrect execute_return if ...
       The implication was wrong, indeed - but the effort was increadible.
@@ -12,7 +18,6 @@ Revision history for Perl module MooX::Cmd
 
 
 0.008 2013-11-13
-
     - groundwork for testing with Mo(o(se))
     - add THANKS section
     - final test for MooX::Options 3.99
@@ -21,7 +26,6 @@ Revision history for Perl module MooX::Cmd
 
 
 0.007 2013-11-07
-
     - improve test coverage of MooX::Cmd::Role
     - 100% test coverage of MooX::Cmd
     - add some documentation for MooX::Cmd::Tester
@@ -36,24 +40,20 @@ Revision history for Perl module MooX::Cmd
 
 
 0.006001 2013-11-06
-
     - remove superfluous "my" causing undef command_name
 
 
 0.006 2013-11-05
-
     - Merge github.com:rehsack/MooX-Cmd
 
 
 0.005 2013-11-05
-
     - Merge github.com:Getty/p5-moox-cmd into rehsack
     - correct content of command_name attribute
     - Merge github.com:Getty/p5-moox-cmd
 
 
 0.004 2013-11-02
-
     - New travis config
     - Add some comfort as primary author desires
       To avoid scaring users the Getty wants some improved examples and an
@@ -78,7 +78,6 @@ Revision history for Perl module MooX::Cmd
 
 
 0.003 2013-04-20
-
     - Switched to Author::GETTY, added .travis.yml
     - Don't load commands unless they are used
       This should make things much more zippy if we have
@@ -86,12 +85,10 @@ Revision history for Perl module MooX::Cmd
 
 
 0.002 2012-05-07
-
     - Added requirement for Package::Stash
     - Added documentation (hope it works ;) as told hehe) and use of Package::Stash
 
 
 0.001 2012-02-10
-
     - First release to CPAN
 
