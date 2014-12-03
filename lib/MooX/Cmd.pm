@@ -28,12 +28,7 @@ sub import
       and $stash->add_symbol( '&' . $import_options{execute_return_method_name},
         sub { shift->{ $import_options{execute_return_method_name} } } );
     defined $import_options{creation_method_name} or $import_options{creation_method_name} = "new_with_cmd";
-    $stash->add_symbol(
-        '&' . $import_options{creation_method_name},
-        sub {
-            goto &MooX::Cmd::Role::_initialize_from_cmd;
-        }
-    );
+    $stash->add_symbol( '&' . $import_options{creation_method_name}, sub { shift->_initialize_from_cmd(@_); } );
 
     my $apply_modifiers = sub {
         $caller->can('_initialize_from_cmd') and return;
