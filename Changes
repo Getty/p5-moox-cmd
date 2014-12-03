@@ -1,5 +1,11 @@
 Revision history for Perl module MooX::Cmd
 
+0.011 2014-12-03
+    - apply clean Perl::Tidy rules to avoid mixed spaces/tabs and other
+      settings
+    - add version number to MooX::Cmd::Tester
+    - allow overriding protected constructor when renaming public one
+
 0.010 2014-12-02
     - switch distribution tooling from Dist::Zilla to ExtUtils::MakeMaker
     - Added Changes file with content based on git log according to
