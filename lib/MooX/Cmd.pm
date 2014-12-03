@@ -7,53 +7,59 @@ our $VERSION = "0.011";
 
 use Package::Stash;
 
-sub import {
-	my ( undef, %import_options ) = @_;
-	my $caller = caller;
-	my @caller_isa;
-	{ no strict 'refs'; @caller_isa = @{"${caller}::ISA"} };
+sub import
+{
+    my ( undef, %import_options ) = @_;
+    my $caller = caller;
+    my @caller_isa;
+    { no strict 'refs'; @caller_isa = @{"${caller}::ISA"} };
 
-	#don't add this to a role
-	#ISA of a role is always empty !
-	## no critic qw/ProhibitStringyEval/
-	@caller_isa or return;
+    #don't add this to a role
+    #ISA of a role is always empty !
+    ## no critic qw/ProhibitStringyEval/
+    @caller_isa or return;
 
-	my $execute_return_method_name = $import_options{execute_return_method_name};
+    my $execute_return_method_name = $import_options{execute_return_method_name};
 
-	exists $import_options{execute_from_new} or $import_options{execute_from_new} = 1; # set default until we want other way
+    exists $import_options{execute_from_new} or $import_options{execute_from_new} = 1;    # set default until we want other way
 
-	my $stash = Package::Stash->new($caller);
-	defined $import_options{execute_return_method_name}
-	  and $stash->add_symbol('&'.$import_options{execute_return_method_name}, sub { shift->{$import_options{execute_return_method_name}} });
-	defined $import_options{creation_method_name} or $import_options{creation_method_name} = "new_with_cmd";
-	$stash->add_symbol('&'.$import_options{creation_method_name}, sub {
-		goto &MooX::Cmd::Role::_initialize_from_cmd;;
-	});
+    my $stash = Package::Stash->new($caller);
+    defined $import_options{execute_return_method_name}
+      and $stash->add_symbol( '&' . $import_options{execute_return_method_name},
+        sub { shift->{ $import_options{execute_return_method_name} } } );
+    defined $import_options{creation_method_name} or $import_options{creation_method_name} = "new_with_cmd";
+    $stash->add_symbol(
+        '&' . $import_options{creation_method_name},
+        sub {
+            goto &MooX::Cmd::Role::_initialize_from_cmd;
+        }
+    );
 
-	my $apply_modifiers = sub {
-		$caller->can('_initialize_from_cmd') and return;
-		my $with = $caller->can('with');
-		$with->('MooX::Cmd::Role');
-	};
-	$apply_modifiers->();
+    my $apply_modifiers = sub {
+        $caller->can('_initialize_from_cmd') and return;
+        my $with = $caller->can('with');
+        $with->('MooX::Cmd::Role');
+    };
+    $apply_modifiers->();
 
-	my %default_modifiers = (
-		base => '_build_command_base',
-		execute_method_name => '_build_command_execute_method_name',
-		execute_return_method_name => '_build_command_execute_return_method_name',
-		creation_chain_methods => '_build_command_creation_chain_methods',
-		creation_method_name => '_build_command_creation_method_name',
-		execute_from_new => '_build_command_execute_from_new',
-	);
+    my %default_modifiers = (
+        base                       => '_build_command_base',
+        execute_method_name        => '_build_command_execute_method_name',
+        execute_return_method_name => '_build_command_execute_return_method_name',
+        creation_chain_methods     => '_build_command_creation_chain_methods',
+        creation_method_name       => '_build_command_creation_method_name',
+        execute_from_new           => '_build_command_execute_from_new',
+    );
 
-	my $around;
-	foreach my $opt_key (keys %default_modifiers) {
-		exists $import_options{$opt_key} or next;
-		$around or $around = $caller->can('around');
-		$around->( $default_modifiers{$opt_key} => sub { $import_options{$opt_key} } );
-	}
+    my $around;
+    foreach my $opt_key ( keys %default_modifiers )
+    {
+        exists $import_options{$opt_key} or next;
+        $around or $around = $caller->can('around');
+        $around->( $default_modifiers{$opt_key} => sub { $import_options{$opt_key} } );
+    }
 
-	return;
+    return;
 }
 
 1;

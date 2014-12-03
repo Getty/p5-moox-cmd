@@ -1,8 +1,9 @@
 package MooX::Cmd::Tester;
-# ABSTRACT: MooX cli app commands tester
 
 use strict;
 use warnings;
+
+our $VERSION = "0.011";
 
 require Exporter;
 use Test::More import => ['!pass'];
@@ -30,7 +31,7 @@ sub test_cmd
 {
     my ( $app, $argv ) = @_;
 
-    my $result    = _run_with_capture( $app, $argv );
+    my $result = _run_with_capture( $app, $argv );
     my $exit_code = defined $result->{error} ? ( ( 0 + $! ) || -1 ) : 0;
 
     $result->{error}
@@ -38,22 +39,25 @@ sub test_cmd
       and $exit_code = ${ $result->{error} };
 
     result_class->new(
-                       {
-                         exit_code => $exit_code,
-                         %$result,
-                       }
-                     );
+        {
+            exit_code => $exit_code,
+            %$result,
+        }
+    );
 }
 
 sub test_cmd_ok
 {
     my $rv = test_cmd(@_);
 
-    my $test_ident = $rv->app . " => [ " . join( " ", @{$_[1]} ) . " ]";
-    ok(!$rv->error, "Everythink ok running cmd $test_ident") or diag($rv->error);
+    my $test_ident = $rv->app . " => [ " . join( " ", @{ $_[1] } ) . " ]";
+    ok( !$rv->error, "Everythink ok running cmd $test_ident" ) or diag( $rv->error );
     # no error and cmd means, we're reasonable successful so far
-    $rv and !$rv->error and $rv->cmd and $rv->cmd->command_name and
-      ok($rv->cmd->command_commands->{$rv->cmd->command_name}, "found command at $test_ident");
+    $rv
+      and !$rv->error
+      and $rv->cmd
+      and $rv->cmd->command_name
+      and ok( $rv->cmd->command_commands->{ $rv->cmd->command_name }, "found command at $test_ident" );
 
     $rv;
 }
@@ -79,43 +83,43 @@ sub _run_with_capture
         $cmd = ref $app ? $app : $app->new_with_cmd;
         ref $app and $app = ref $app;
         my $test_ident = "$app => [ " . join( " ", @$argv ) . " ]";
-        ok( $cmd->isa($app),    "got a '$app' from new_with_cmd" );
-	@$argv and defined ($cmd_name = $cmd->command_name) and 
-	    ok( (grep { $_ =~ m/$cmd_name/ } @$argv), "proper cmd name from $test_ident" );
-        ok( scalar @{ $cmd->command_chain } <= 1 + scalar @$argv,
-            "\$#argv vs. command chain length testing $test_ident" );
-	@$argv and ok( $cmd->command_chain_end == $cmd->command_chain->[-1],
-	    "command_chain_end ok");
-	unless($execute_rv = $cmd->execute_return)
-	{
-	    my ($command_execute_from_new, $command_execute_method_name);
-	    my $cce = $cmd->can("command_chain_end");
-	    $cce and $cce = $cce->($cmd);
-	    $cce and $command_execute_from_new = $cce->can("command_execute_from_new");
-	    $command_execute_from_new and $command_execute_from_new = $command_execute_from_new->($cce);
-	    $command_execute_from_new or $command_execute_method_name = $cce->can('command_execute_method_name');
-	    $command_execute_method_name
-	      and $execute_rv = [ $cce->can($command_execute_method_name->($cce))->($cce) ];
-	}
+        ok( $cmd->isa($app), "got a '$app' from new_with_cmd" );
+        @$argv
+          and defined( $cmd_name = $cmd->command_name )
+          and ok( ( grep { $_ =~ m/$cmd_name/ } @$argv ), "proper cmd name from $test_ident" );
+        ok( scalar @{ $cmd->command_chain } <= 1 + scalar @$argv, "\$#argv vs. command chain length testing $test_ident" );
+        @$argv and ok( $cmd->command_chain_end == $cmd->command_chain->[-1], "command_chain_end ok" );
+
+        unless ( $execute_rv = $cmd->execute_return )
+        {
+            my ( $command_execute_from_new, $command_execute_method_name );
+            my $cce = $cmd->can("command_chain_end");
+            $cce                      and $cce                      = $cce->($cmd);
+            $cce                      and $command_execute_from_new = $cce->can("command_execute_from_new");
+            $command_execute_from_new and $command_execute_from_new = $command_execute_from_new->($cce);
+            $command_execute_from_new or $command_execute_method_name = $cce->can('command_execute_method_name');
+            $command_execute_method_name
+              and $execute_rv = [ $cce->can( $command_execute_method_name->($cce) )->($cce) ];
+        }
         1;
     };
 
     my $error = $ok ? undef : $@;
 
     return {
-             app        => $app,
-             cmd        => $cmd,
-             stdout     => $hub->slot_contents('stdout'),
-             stderr     => $hub->slot_contents('stderr'),
-             output     => $hub->combined_contents,
-             error      => $error,
-             execute_rv => $execute_rv,
-           };
+        app        => $app,
+        cmd        => $cmd,
+        stdout     => $hub->slot_contents('stdout'),
+        stderr     => $hub->slot_contents('stderr'),
+        output     => $hub->combined_contents,
+        error      => $error,
+        execute_rv => $execute_rv,
+    };
 }
 
 {
-    package # no-index
-	MooX::Cmd::Tester::Result;
+    package    # no-index
+      MooX::Cmd::Tester::Result;
 
     sub new
     {
@@ -131,8 +135,8 @@ for my $attr (qw(app cmd stdout stderr output error execute_rv exit_code))
 }
 
 {
-    package # no-index
-	MooX::Cmd::Tester::Exited;
+    package    # no-index
+      MooX::Cmd::Tester::Exited;
 
     sub throw
     {
@@ -142,6 +146,10 @@ for my $attr (qw(app cmd stdout stderr output error execute_rv exit_code))
         die $self;
     }
 }
+
+=head1 NAME
+
+MooX::Cmd::Tester - MooX cli app commands tester
 
 =head1 SYNOPSIS
 

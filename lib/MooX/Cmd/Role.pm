@@ -126,27 +126,28 @@ has 'command_commands' => ( is => "lazy" );
 
 sub _build_command_commands
 {
-	my ($class, $params) = @_;
-	defined $params->{command_base} or $params->{command_base} = $class->_build_command_base($params);
-	my $base = $params->{command_base};
+    my ( $class, $params ) = @_;
+    defined $params->{command_base} or $params->{command_base} = $class->_build_command_base($params);
+    my $base = $params->{command_base};
 
-	# i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
-	my @cmd_plugins = grep {
-		my $plug_class = $_;
-		$plug_class =~ s/${base}:://;
-		$plug_class !~ /:/;
-	} Module::Pluggable::Object->new(
-		search_path => $base,
-		require => 0,
-	)->plugins;
+    # i have no clue why 'only' and 'except' seems to not fulfill what i need or are bugged in M::P - Getty
+    my @cmd_plugins = grep {
+        my $plug_class = $_;
+        $plug_class =~ s/${base}:://;
+        $plug_class !~ /:/;
+      } Module::Pluggable::Object->new(
+        search_path => $base,
+        require     => 0,
+      )->plugins;
 
-	my %cmds;
+    my %cmds;
 
-	for my $cmd_plugin (@cmd_plugins) {
-		$cmds{_mkcommand($cmd_plugin,$base)} = $cmd_plugin;
-	}
+    for my $cmd_plugin (@cmd_plugins)
+    {
+        $cmds{ _mkcommand( $cmd_plugin, $base ) } = $cmd_plugin;
+    }
 
-	\%cmds;
+    \%cmds;
 }
 
 =head2 command_base
@@ -160,7 +161,7 @@ has command_base => ( is => "lazy" );
 sub _build_command_base
 {
     my $class = blessed $_[0] || $_[0];
-    return $class . '::Cmd'
+    return $class . '::Cmd';
 }
 
 =head2 command_execute_method_name
@@ -201,7 +202,7 @@ ARRAY-REF names of methods to chain for creating object (from L</command_creatio
 
 has command_creation_chain_methods => ( is => "lazy" );
 
-sub _build_command_creation_chain_methods { ['new_with_options','new'] }
+sub _build_command_creation_chain_methods { [ 'new_with_options', 'new' ] }
 
 =head2 command_execute_from_new
 
@@ -223,111 +224,123 @@ initializes by searching command line args for commands and invoke them
 
 sub new_with_cmd { goto &_initialize_from_cmd; }
 
-sub _mkcommand {
-	my ( $package, $base ) = @_;
-	$package =~ s/^${base}:://g;
-	lc($package);
+sub _mkcommand
+{
+    my ( $package, $base ) = @_;
+    $package =~ s/^${base}:://g;
+    lc($package);
 }
 
-my @private_init_params = qw(command_base command_execute_method_name command_execute_return_method_name command_creation_chain_methods command_execute_method_name);
+my @private_init_params =
+  qw(command_base command_execute_method_name command_execute_return_method_name command_creation_chain_methods command_execute_method_name);
 
 my $required_method = sub {
-	my ($tgt, $method) = @_;
-	$tgt->can($method) or croak("You need an '$method' in " . (blessed $tgt || $tgt));
+    my ( $tgt, $method ) = @_;
+    $tgt->can($method) or croak( "You need an '$method' in " . ( blessed $tgt || $tgt ) );
 };
 
 my $call_required_method = sub {
-	my ($tgt, $method, @args) = @_;
-	my $m = $required_method->($tgt, $method);
-	return $m->($tgt, @args);
+    my ( $tgt, $method, @args ) = @_;
+    my $m = $required_method->( $tgt, $method );
+    return $m->( $tgt, @args );
 };
 
 my $call_optional_method = sub {
-	my ($tgt, $method, @args) = @_;
-	my $m = $tgt->can($method) or return;
-	return $m->($tgt, @args);
+    my ( $tgt, $method, @args ) = @_;
+    my $m = $tgt->can($method) or return;
+    return $m->( $tgt, @args );
 };
 
 my $call_indirect_method = sub {
-	my ($tgt, $name_getter, @args) = @_;
-	my $g = $call_required_method->($tgt, $name_getter);
-	my $m = $required_method->($tgt, $g);
-	return $m->($tgt, @args);
+    my ( $tgt, $name_getter, @args ) = @_;
+    my $g = $call_required_method->( $tgt, $name_getter );
+    my $m = $required_method->( $tgt, $g );
+    return $m->( $tgt, @args );
 };
 
 sub _initialize_from_cmd
 {
-	my ( $class, %params ) = @_;
+    my ( $class, %params ) = @_;
 
-	my @args = shellwords( join ' ', map { quotemeta } @ARGV );
+    my @args = shellwords( join ' ', map { quotemeta } @ARGV );
 
-	my (@used_args, $cmd, $cmd_name);
+    my ( @used_args, $cmd, $cmd_name );
 
-	my %cmd_create_params = %params;
-	delete @cmd_create_params{qw(command_commands), @private_init_params};
+    my %cmd_create_params = %params;
+    delete @cmd_create_params{ qw(command_commands), @private_init_params };
 
-	defined $params{command_commands} or $params{command_commands} = $class->_build_command_commands(\%params);
-	while (my $arg = shift @args) {
-		push @used_args, $arg and next unless $cmd = $params{command_commands}->{$arg};
+    defined $params{command_commands} or $params{command_commands} = $class->_build_command_commands( \%params );
+    while ( my $arg = shift @args )
+    {
+        push @used_args, $arg and next unless $cmd = $params{command_commands}->{$arg};
 
-		$cmd_name = $arg; # be careful about relics
-		use_module( $cmd );
-		defined $cmd_create_params{command_execute_method_name}
-		  or $cmd_create_params{command_execute_method_name} = $call_optional_method->(
-		    $cmd, "_build_command_execute_method_name", \%cmd_create_params);
-		defined $cmd_create_params{command_execute_method_name} 
-		  or $cmd_create_params{command_execute_method_name} = "execute";
-		$required_method->($cmd, $cmd_create_params{command_execute_method_name});
-		last;
-	}
+        $cmd_name = $arg;    # be careful about relics
+        use_module($cmd);
+        defined $cmd_create_params{command_execute_method_name}
+          or $cmd_create_params{command_execute_method_name} =
+          $call_optional_method->( $cmd, "_build_command_execute_method_name", \%cmd_create_params );
+        defined $cmd_create_params{command_execute_method_name}
+          or $cmd_create_params{command_execute_method_name} = "execute";
+        $required_method->( $cmd, $cmd_create_params{command_execute_method_name} );
+        last;
+    }
 
-	defined $params{command_creation_chain_methods}
-	  or $params{command_creation_chain_methods} = $class->_build_command_creation_chain_methods(\%params);
-	my @creation_chain = _ARRAY($params{command_creation_chain_methods})
-			   ? @{$params{command_creation_chain_methods}}
-			   : ($params{command_creation_chain_methods});
-	my $creation_method_name = first { defined $_ and $class->can($_) } @creation_chain;
-	croak "Can't find a creation method on " . $class unless $creation_method_name;
-	my $creation_method = $class->can($creation_method_name); # XXX this is a perfect candidate for a new function in List::MoreUtils
+    defined $params{command_creation_chain_methods}
+      or $params{command_creation_chain_methods} = $class->_build_command_creation_chain_methods( \%params );
+    my @creation_chain =
+      _ARRAY( $params{command_creation_chain_methods} )
+      ? @{ $params{command_creation_chain_methods} }
+      : ( $params{command_creation_chain_methods} );
+    my $creation_method_name = first { defined $_ and $class->can($_) } @creation_chain;
+    croak "Can't find a creation method on " . $class unless $creation_method_name;
+    my $creation_method =
+      $class->can($creation_method_name);    # XXX this is a perfect candidate for a new function in List::MoreUtils
 
-	@ARGV = @used_args;
-	$params{command_args} = [ @args ];
-	$params{command_name} = $cmd_name;
-	defined $params{command_chain} or $params{command_chain} = [];
-	my $self = $creation_method->($class, %params);
-	push @{$self->command_chain}, $self;
+    @ARGV                 = @used_args;
+    $params{command_args} = [@args];
+    $params{command_name} = $cmd_name;
+    defined $params{command_chain} or $params{command_chain} = [];
+    my $self = $creation_method->( $class, %params );
+    push @{ $self->command_chain }, $self;
 
-	if ($cmd) {
-		@ARGV = @args;
-		my ($creation_method,$creation_method_name,$cmd_plugin);
-		$cmd->can("_build_command_creation_method_name") and $creation_method_name = $cmd->_build_command_creation_method_name(\%params);
-		$creation_method_name and $creation_method = $cmd->can($creation_method_name);
-		if ($creation_method) {
-			@cmd_create_params{qw(command_chain)} = @$self{qw(command_chain)};
-			$cmd_plugin = $creation_method->($cmd, %cmd_create_params);
-			$self->{$self->command_execute_return_method_name} = [
-			    @{ $call_indirect_method->($cmd_plugin, "command_execute_return_method_name") } ];
-		} else {
-			$creation_method_name = first { $cmd->can($_) } @creation_chain;
-			croak "Can't find a creation method on " . $cmd unless $creation_method_name;
-			# XXX this is a perfect candidate for a new function in List::MoreUtils
-			$creation_method = $cmd->can($creation_method_name);
-			$cmd_plugin = $creation_method->($cmd);
-			push @{$self->command_chain}, $cmd_plugin;
+    if ($cmd)
+    {
+        @ARGV = @args;
+        my ( $creation_method, $creation_method_name, $cmd_plugin );
+        $cmd->can("_build_command_creation_method_name")
+          and $creation_method_name = $cmd->_build_command_creation_method_name( \%params );
+        $creation_method_name and $creation_method = $cmd->can($creation_method_name);
+        if ($creation_method)
+        {
+            @cmd_create_params{qw(command_chain)} = @$self{qw(command_chain)};
+            $cmd_plugin = $creation_method->( $cmd, %cmd_create_params );
+            $self->{ $self->command_execute_return_method_name } =
+              [ @{ $call_indirect_method->( $cmd_plugin, "command_execute_return_method_name" ) } ];
+        }
+        else
+        {
+            $creation_method_name = first { $cmd->can($_) } @creation_chain;
+            croak "Can't find a creation method on " . $cmd unless $creation_method_name;
+            # XXX this is a perfect candidate for a new function in List::MoreUtils
+            $creation_method = $cmd->can($creation_method_name);
+            $cmd_plugin      = $creation_method->($cmd);
+            push @{ $self->command_chain }, $cmd_plugin;
 
-			my $cemn = $cmd_plugin->can("command_execute_method_name");
-			my $exec_fun = $cemn ? $cemn->() : $self->command_execute_method_name();
-			$self->command_execute_from_new
-			  and $self->{$self->command_execute_return_method_name} = [
-			    $call_required_method->($cmd_plugin, $exec_fun, \@ARGV, $self->command_chain) ];
-		}
-	} else {
-		$self->command_execute_from_new
-		  and $self->{$self->command_execute_return_method_name} = [
-		    $call_indirect_method->($self, "command_execute_method_name", \@ARGV, $self->command_chain) ];
-	}
+            my $cemn = $cmd_plugin->can("command_execute_method_name");
+            my $exec_fun = $cemn ? $cemn->() : $self->command_execute_method_name();
+            $self->command_execute_from_new
+              and $self->{ $self->command_execute_return_method_name } =
+              [ $call_required_method->( $cmd_plugin, $exec_fun, \@ARGV, $self->command_chain ) ];
+        }
+    }
+    else
+    {
+        $self->command_execute_from_new
+          and $self->{ $self->command_execute_return_method_name } =
+          [ $call_indirect_method->( $self, "command_execute_method_name", \@ARGV, $self->command_chain ) ];
+    }
 
-	return $self;
+    return $self;
 }
 
 =head2 execute_return
