@@ -13,7 +13,7 @@ use Regexp::Common;
 use Text::ParseWords 'shellwords';
 use Module::Pluggable::Object;
 
-use List::Util qw/first/;
+use List::MoreUtils qw/first_index first_result/;
 use Scalar::Util qw/blessed/;
 use Params::Util qw/_ARRAY/;
 
@@ -158,11 +158,7 @@ STRING base of command plugins
 
 has command_base => ( is => "lazy" );
 
-sub _build_command_base
-{
-    my $class = blessed $_[0] || $_[0];
-    return $class . '::Cmd';
-}
+sub _build_command_base { $_[0] . '::Cmd'; }
 
 =head2 command_execute_method_name
 
@@ -264,17 +260,17 @@ sub _initialize_from_cmd
 
     my @args = shellwords( join ' ', map { quotemeta } @ARGV );
 
-    my ( @used_args, $cmd, $cmd_name );
+    my ( @used_args, $cmd, $cmd_name, $cmd_name_index );
 
     my %cmd_create_params = %params;
     delete @cmd_create_params{ qw(command_commands), @private_init_params };
 
     defined $params{command_commands} or $params{command_commands} = $class->_build_command_commands( \%params );
-    while ( my $arg = shift @args )
+    if ( ( $cmd_name_index = first_index { $cmd = $params{command_commands}->{$_} } @args ) >= 0 )
     {
-        push @used_args, $arg and next unless $cmd = $params{command_commands}->{$arg};
+        @used_args = splice @args, 0, $cmd_name_index;
+        $cmd_name = shift @args;    # be careful about relics
 
-        $cmd_name = $arg;    # be careful about relics
         use_module($cmd);
         defined $cmd_create_params{command_execute_method_name}
           or $cmd_create_params{command_execute_method_name} =
@@ -282,7 +278,11 @@ sub _initialize_from_cmd
         defined $cmd_create_params{command_execute_method_name}
           or $cmd_create_params{command_execute_method_name} = "execute";
         $required_method->( $cmd, $cmd_create_params{command_execute_method_name} );
-        last;
+    }
+    else
+    {
+        @used_args = @args;
+        @args      = ();
     }
 
     defined $params{command_creation_chain_methods}
@@ -291,10 +291,8 @@ sub _initialize_from_cmd
       _ARRAY( $params{command_creation_chain_methods} )
       ? @{ $params{command_creation_chain_methods} }
       : ( $params{command_creation_chain_methods} );
-    my $creation_method_name = first { defined $_ and $class->can($_) } @creation_chain;
-    croak "Can't find a creation method on " . $class unless $creation_method_name;
-    my $creation_method =
-      $class->can($creation_method_name);    # XXX this is a perfect candidate for a new function in List::MoreUtils
+    ( my $creation_method = first_result { defined $_ and $class->can($_) } @creation_chain )
+      or croak "Can't find a creation method on $class";
 
     @ARGV                 = @used_args;
     $params{command_args} = [@args];
@@ -319,11 +317,9 @@ sub _initialize_from_cmd
         }
         else
         {
-            $creation_method_name = first { $cmd->can($_) } @creation_chain;
-            croak "Can't find a creation method on " . $cmd unless $creation_method_name;
-            # XXX this is a perfect candidate for a new function in List::MoreUtils
-            $creation_method = $cmd->can($creation_method_name);
-            $cmd_plugin      = $creation_method->($cmd);
+            ( $creation_method = first_result { defined $_ and $cmd->can($_) } @creation_chain )
+              or croak "Can't find a creation method on " . $cmd;
+            $cmd_plugin = $creation_method->($cmd);
             push @{ $self->command_chain }, $cmd_plugin;
 
             my $cemn = $cmd_plugin->can("command_execute_method_name");

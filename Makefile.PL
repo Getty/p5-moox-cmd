@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker;
 
 my %RUN_DEPS = (
     "Carp" => 0,
-    "List::Util" => 0,
+    "List::MoreUtils" => 0.406,
     "Moo" => "0.009013",
     "Module::Pluggable" => "4.8",
     "Module::Runtime" => 0,

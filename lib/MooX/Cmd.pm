@@ -34,12 +34,11 @@ sub import
         $caller->can('_initialize_from_cmd') and return;
         my $with = $caller->can('with');
         $with->('MooX::Cmd::Role');
-	# XXX prove whether it can chained ...
-	$import_options{with_config_from_file} and $with->('MooX::ConfigFromFile::Role');
-	$import_options{with_config_from_file} and $with->('MooX::Cmd::Role::ConfigFromFile');
+        # XXX prove whether it can chained ...
+        $import_options{with_config_from_file} and $with->('MooX::ConfigFromFile::Role');
+        $import_options{with_config_from_file} and $with->('MooX::Cmd::Role::ConfigFromFile');
     };
     $apply_modifiers->();
-
 
     my %default_modifiers = (
         base                       => '_build_command_base',
