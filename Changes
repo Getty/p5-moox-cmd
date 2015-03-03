@@ -1,5 +1,11 @@
 Revision history for Perl module MooX::Cmd
 
+0.012 2015-03-03
+    - add support for MooX::ConfigFromFile (0.006+)
+    - improve initialization by using List::MoreUtils combo-functions
+      instead of puzzling with List::Util
+    - improve test coverage
+
 0.011 2014-12-03
     - apply clean Perl::Tidy rules to avoid mixed spaces/tabs and other
       settings
