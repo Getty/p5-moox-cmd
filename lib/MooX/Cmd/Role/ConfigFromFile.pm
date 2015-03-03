@@ -30,7 +30,7 @@ around _build_config_prefixes => sub {
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2014 Jens Rehsack.
+Copyright 2015 Jens Rehsack.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
