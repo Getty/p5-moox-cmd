@@ -36,8 +36,8 @@ WriteMakefile1(
         resources   => {
             homepage   => 'https://metacpan.org/release/MooX-Cmd',
             repository => {
-                url  => 'https://github.com:Getty/MooX-Cmd.git',
-                web  => 'https://github.com/Getty/MooX-Cmd',
+                url  => 'https://github.com:Getty/p5-moox-cmd.git',
+                web  => 'https://github.com/Getty/p5-moox-cmd',
                 type => 'git',
             },
             bugtracker => {
