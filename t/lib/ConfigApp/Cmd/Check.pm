@@ -3,14 +3,20 @@ package ConfigApp::Cmd::Check;
 use strict;
 use warnings;
 
-BEGIN {
+BEGIN
+{
     my $moodel = $ENV{WHICH_MOODEL} || "Moo";
-    eval "use $moodel;"; $@ and die $@;
+    eval "use $moodel;";
+    $@ and die $@;
     $moodel->import;
 }
 use MooX::Cmd;
 
-has unintialized_attribute => (is => "lazy");
+has unintialized_attribute => (
+    is      => "ro",
+    builder => "_build_unintialized_attribute",
+    lazy    => 1
+);
 
 sub _build_unintialized_attribute { time }
 
