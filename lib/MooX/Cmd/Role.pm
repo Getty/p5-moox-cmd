@@ -3,7 +3,7 @@ package MooX::Cmd::Role;
 use strict;
 use warnings;
 
-our $VERSION = "0.013";
+our $VERSION = "0.014";
 
 use Moo::Role;
 
