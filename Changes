@@ -1,5 +1,9 @@
 Revision history for Perl module MooX::Cmd
 
+0.013 2015-03-04
+    - fix repository path's (reported by haarg)
+    - fix ConfigFromFile test for Moose
+
 0.012 2015-03-03
     - add support for MooX::ConfigFromFile (0.006+)
     - improve initialization by using List::MoreUtils combo-functions
