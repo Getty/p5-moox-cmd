@@ -25,8 +25,8 @@ my %CONFIGURE_DEPS = (
 my %BUILD_DEPS = ();
 
 my %TEST_DEPS = (
-    "Test::More"     => 0.98,
-    "IO::TieCombine" => 0,
+    "Test::More"    => 0.98,
+    "Capture::Tiny" => 0,
 );
 
 WriteMakefile1(
