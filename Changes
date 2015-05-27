@@ -1,5 +1,10 @@
 Revision history for Perl module MooX::Cmd
 
+0.014 2015-05-27
+    - switching from IO::TieCombine to stacked Capture::Tiny in
+      MooX::Cmd::Tester to avoid breaking commands in test (only)
+      when relying on fileno of STD{OUT,ERR}
+
 0.013 2015-03-04
     - fix repository path's (reported by haarg)
     - fix ConfigFromFile test for Moose
