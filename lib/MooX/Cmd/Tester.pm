@@ -3,7 +3,7 @@ package MooX::Cmd::Tester;
 use strict;
 use warnings;
 
-our $VERSION = "0.014";
+our $VERSION = "0.015";
 
 require Exporter;
 use Test::More import => ['!pass'];
