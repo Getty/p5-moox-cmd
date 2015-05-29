@@ -63,48 +63,62 @@ sub test_cmd_ok
     $rv;
 }
 
+sub _capture_merged(&)
+{
+    my $code = shift;
+    my ( $stdout, $stderr, $merged, $ok );
+    if ( $^O eq 'MSWin32' )
+    {
+        ( $stdout, $stderr, $ok ) = tee { $code->(); };
+        $merged = $stdout . $stderr;
+    }
+    else
+    {
+        ($merged) = tee_merged
+        {
+            ( $stdout, $stderr, $ok ) = tee { $code->() };
+        };
+    }
+    ( $stdout, $stderr, $merged, $ok );
+}
+
 sub _run_with_capture
 {
     my ( $app, $argv ) = @_;
 
     my ( $execute_rv, $cmd, $cmd_name );
 
-    my ( $stdout, $stderr, $ok );
-    my ($merged) = tee_merged
+    my ( $stdout, $stderr, $merged, $ok ) = _capture_merged
     {
-        ( $stdout, $stderr, $ok ) = tee
-        {
-            eval {
-                local $TEST_IN_PROGRESS = 1;
-                local @ARGV             = @$argv;
+        eval {
+            local $TEST_IN_PROGRESS = 1;
+            local @ARGV             = @$argv;
 
-                my $tb = $CLASS->builder();
+            my $tb = $CLASS->builder();
 
-                $cmd = ref $app ? $app : $app->new_with_cmd;
-                ref $app and $app = ref $app;
-                my $test_ident = "$app => [ " . join( " ", @$argv ) . " ]";
-                ok( $cmd->isa($app), "got a '$app' from new_with_cmd" );
-                @$argv
-                  and defined( $cmd_name = $cmd->command_name )
-                  and ok( ( grep { $_ =~ m/$cmd_name/ } @$argv ), "proper cmd name from $test_ident" );
-                ok( scalar @{ $cmd->command_chain } <= 1 + scalar @$argv,
-                    "\$#argv vs. command chain length testing $test_ident" );
-                @$argv and ok( $cmd->command_chain_end == $cmd->command_chain->[-1], "command_chain_end ok" );
+            $cmd = ref $app ? $app : $app->new_with_cmd;
+            ref $app and $app = ref $app;
+            my $test_ident = "$app => [ " . join( " ", @$argv ) . " ]";
+            ok( $cmd->isa($app), "got a '$app' from new_with_cmd" );
+            @$argv
+              and defined( $cmd_name = $cmd->command_name )
+              and ok( ( grep { $_ =~ m/$cmd_name/ } @$argv ), "proper cmd name from $test_ident" );
+            ok( scalar @{ $cmd->command_chain } <= 1 + scalar @$argv, "\$#argv vs. command chain length testing $test_ident" );
+            @$argv and ok( $cmd->command_chain_end == $cmd->command_chain->[-1], "command_chain_end ok" );
 
-                unless ( $execute_rv = $cmd->execute_return )
-                {
-                    my ( $command_execute_from_new, $command_execute_method_name );
-                    my $cce = $cmd->can("command_chain_end");
-                    $cce                      and $cce                      = $cce->($cmd);
-                    $cce                      and $command_execute_from_new = $cce->can("command_execute_from_new");
-                    $command_execute_from_new and $command_execute_from_new = $command_execute_from_new->($cce);
-                    $command_execute_from_new or $command_execute_method_name = $cce->can('command_execute_method_name');
-                    $command_execute_method_name
-                      and $execute_rv = [ $cce->can( $command_execute_method_name->($cce) )->($cce) ];
-                }
-                1;
+            unless ( $execute_rv = $cmd->execute_return )
+            {
+                my ( $command_execute_from_new, $command_execute_method_name );
+                my $cce = $cmd->can("command_chain_end");
+                $cce                      and $cce                      = $cce->($cmd);
+                $cce                      and $command_execute_from_new = $cce->can("command_execute_from_new");
+                $command_execute_from_new and $command_execute_from_new = $command_execute_from_new->($cce);
+                $command_execute_from_new or $command_execute_method_name = $cce->can('command_execute_method_name');
+                $command_execute_method_name
+                  and $execute_rv = [ $cce->can( $command_execute_method_name->($cce) )->($cce) ];
             }
-        }
+            1;
+        };
     };
 
     my $error = $ok ? undef : $@;
