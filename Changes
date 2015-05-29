@@ -1,5 +1,9 @@
 Revision history for Perl module MooX::Cmd
 
+0.015 2015-05-29
+    - fix breaking tests on Win32 due stacked Capture::Tiny::_capture_tee
+      (thanks Alexandr Ciornii for reporting)
+
 0.014 2015-05-27
     - switching from IO::TieCombine to stacked Capture::Tiny in
       MooX::Cmd::Tester to avoid breaking commands in test (only)
