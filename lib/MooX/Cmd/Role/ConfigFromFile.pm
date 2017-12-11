@@ -19,11 +19,11 @@ around _build_config_prefixes => sub {
     my $next     = shift;
     my $class    = shift;
     my $params   = shift;
-    my $cfg_pfxs = $class->$next( $params, @_ );
+    my $cfg_pfxs = $class->$next($params, @_);
 
     ref $params->{command_chain} eq "ARRAY"
       and push @{$cfg_pfxs},
-      grep { defined $_ } map { $_->command_name } grep { $_->can("command_name") } @{ $params->{command_chain} };
+      grep { defined $_ } map { $_->command_name } grep { $_->can("command_name") } @{$params->{command_chain}};
 
     return $cfg_pfxs;
 };

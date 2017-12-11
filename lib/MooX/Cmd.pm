@@ -9,14 +9,14 @@ use Package::Stash;
 
 sub import
 {
-    my ( undef, %import_options ) = @_;
+    my (undef, %import_options) = @_;
     my $caller = caller;
     my @caller_isa;
+    ## no critic qw(ProhibitNoStrict)
     { no strict 'refs'; @caller_isa = @{"${caller}::ISA"} };
 
     #don't add this to a role
     #ISA of a role is always empty !
-    ## no critic qw/ProhibitStringyEval/
     @caller_isa or return;
 
     my $execute_return_method_name = $import_options{execute_return_method_name};
@@ -25,10 +25,10 @@ sub import
 
     my $stash = Package::Stash->new($caller);
     defined $import_options{execute_return_method_name}
-      and $stash->add_symbol( '&' . $import_options{execute_return_method_name},
-        sub { shift->{ $import_options{execute_return_method_name} } } );
+      and $stash->add_symbol('&' . $import_options{execute_return_method_name},
+        sub { shift->{$import_options{execute_return_method_name}} });
     defined $import_options{creation_method_name} or $import_options{creation_method_name} = "new_with_cmd";
-    $stash->add_symbol( '&' . $import_options{creation_method_name}, sub { shift->_initialize_from_cmd(@_); } );
+    $stash->add_symbol('&' . $import_options{creation_method_name}, sub { shift->_initialize_from_cmd(@_); });
 
     my $apply_modifiers = sub {
         $caller->can('_initialize_from_cmd') and return;
@@ -50,11 +50,11 @@ sub import
     );
 
     my $around;
-    foreach my $opt_key ( keys %default_modifiers )
+    foreach my $opt_key (keys %default_modifiers)
     {
         exists $import_options{$opt_key} or next;
         $around or $around = $caller->can('around');
-        $around->( $default_modifiers{$opt_key} => sub { $import_options{$opt_key} } );
+        $around->($default_modifiers{$opt_key} => sub { $import_options{$opt_key} });
     }
 
     return;
