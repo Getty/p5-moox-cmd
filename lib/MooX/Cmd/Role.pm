@@ -268,7 +268,8 @@ sub _initialize_from_cmd
     if (($cmd_name_index = first_index { $cmd = $params{command_commands}->{$_} } @args) >= 0)
     {
         @used_args = splice @args, 0, $cmd_name_index;
-        $cmd_name = shift @args;    # be careful about relics
+        shift @args;    # be careful about relics
+        $cmd_name = _mkcommand($cmd, $params{command_base});
 
         use_module($cmd);
         defined $cmd_create_params{command_execute_method_name}

@@ -103,7 +103,7 @@ sub _run_with_capture
             ok($cmd->isa($app), "got a '$app' from new_with_cmd");
             @$argv
               and defined($cmd_name = $cmd->command_name)
-              and ok((grep { index($_, $cmd_name) != -1 } @$argv), "proper cmd name from $test_ident");
+              and ok((grep { index($cmd_name, $_) != -1 } @$argv), "proper cmd name from $test_ident");
             ok(scalar @{$cmd->command_chain} <= 1 + scalar @$argv, "\$#argv vs. command chain length testing $test_ident");
             @$argv and ok($cmd->command_chain_end == $cmd->command_chain->[-1], "command_chain_end ok");
 

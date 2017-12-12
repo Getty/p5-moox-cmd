@@ -37,6 +37,7 @@ sub import
         # XXX prove whether it can chained ...
         $import_options{with_config_from_file} and $with->('MooX::ConfigFromFile::Role');
         $import_options{with_config_from_file} and $with->('MooX::Cmd::Role::ConfigFromFile');
+        $import_options{with_abbrev_cmds}      and $with->('MooX::Cmd::Role::AbbrevCmds');
     };
     $apply_modifiers->();
 

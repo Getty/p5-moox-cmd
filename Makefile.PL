@@ -77,6 +77,7 @@ WriteMakefile1(
                 recommends => {
                     "Hash::Merge"          => "0.299",
                     "MooX::ConfigFromFile" => 0,
+                    "Text::Abbrev"         => 0,
                 },
             },
         },

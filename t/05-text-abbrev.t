@@ -12,27 +12,31 @@ use lib "$Bin/lib";
 
 BEGIN
 {
-    eval "use MooX::ConfigFromFile 0.006; use ConfigApp";
-    $@ and plan skip_all => "Need MooX::ConfigFromFile 0.006 -- $@" and exit(0);
+    eval "use Text::Abbrev; use AbbrevApp";
+    $@ and plan skip_all => "Need Text::Abbrev -- $@" and exit(0);
 }
 
-diag("Testing MooX::Cmd version " . MooX::Cmd->VERSION . " using MooX::ConfigFromFile version " . MooX::ConfigFromFile->VERSION);
+diag("Testing MooX::Cmd version " . MooX::Cmd->VERSION . " using Text::Abbrev version " . Text::Abbrev->VERSION);
 
 my @tests = (
-    [[], "ConfigApp", "ConfigApp", {complicated_setting => {say => "Hello!"}}],
+    [[], "AbbrevApp", "AbbrevApp", {}],
     [
-        [qw(check)],
-        "ConfigApp",
-        "ConfigApp::Cmd::Check",
+        [qw(thuruksp)],
+        "AbbrevApp",
+        "AbbrevApp::Cmd::ThuruksPride",
         {
-            unintialized_attribute => sub { time - $_[0] < 1 }
+            race           => "Split",
+            security_level => "Core"
         }
     ],
     [
-        [qw(check it)],
-        "ConfigApp",
-        "ConfigApp::Cmd::Check::Cmd::It",
-        {dedicated_setting => 1}
+        [qw(thuruksb)],
+        "AbbrevApp",
+        "AbbrevApp::Cmd::ThuruksBeard",
+        {
+            race           => "Split",
+            security_level => "Border"
+        }
     ],
 );
 
