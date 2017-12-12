@@ -140,6 +140,8 @@ sub _build_command_commands
       )->plugins;
 
     my %cmds = map { _mkcommand($_, $base) => $_ } @cmd_plugins;
+    scalar keys %cmds == scalar @cmd_plugins
+      or croak "Can't compute unambiguous list of commands from '" . join("', '", @cmd_plugins) . "'";
 
     \%cmds;
 }
