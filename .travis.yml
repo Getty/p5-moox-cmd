@@ -1,4 +1,6 @@
 ---
+env:
+  - PERL_USE_UNSAFE_INC=0
 install:
   - perl Makefile.PL
   - make manifest
