@@ -3,7 +3,7 @@ package MooX::Cmd::Role::ConfigFromFile;
 use strict;
 use warnings;
 
-our $VERSION = "0.015";
+our $VERSION = "0.016_001";
 
 use Moo::Role;
 
@@ -30,7 +30,7 @@ around _build_config_prefixes => sub {
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2015 Jens Rehsack.
+Copyright 2015-2017 Jens Rehsack.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

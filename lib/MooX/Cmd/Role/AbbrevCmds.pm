@@ -3,7 +3,7 @@ package MooX::Cmd::Role::AbbrevCmds;
 use strict;
 use warnings;
 
-our $VERSION = "0.015";
+our $VERSION = "0.016_001";
 
 use Text::Abbrev;
 

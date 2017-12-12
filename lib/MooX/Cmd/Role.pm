@@ -3,7 +3,7 @@ package MooX::Cmd::Role;
 use strict;
 use warnings;
 
-our $VERSION = "0.015";
+our $VERSION = "0.016_001";
 
 use Moo::Role;
 
@@ -351,7 +351,7 @@ sub execute_return { $_[0]->{execute_return} }
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2015 Jens Rehsack.
+Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2017 Jens Rehsack.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
