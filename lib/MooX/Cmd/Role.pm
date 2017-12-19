@@ -134,10 +134,10 @@ sub _build_command_commands
     my @cmd_plugins = grep {
         my $plug_class = _mkcommand($_, $base);
         index($plug_class, ":") == -1;
-      } Module::Pluggable::Object->new(
+    } Module::Pluggable::Object->new(
         search_path => $base,
         require     => 0,
-      )->plugins;
+    )->plugins;
 
     my %cmds = map { _mkcommand($_, $base) => $_ } @cmd_plugins;
     scalar keys %cmds == scalar @cmd_plugins

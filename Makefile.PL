@@ -54,6 +54,7 @@ WriteMakefile1(
                     "Module::CPANTS::Analyse"             => "0.96",
                     "Test::Kwalitee"                      => 0,
                     "Test::Perl::Critic"                  => 0,
+                    "Perl::Tidy"                          => "20171214",
                     "Test::PerlTidy"                      => 0,
                     "Test::Pod"                           => 0,
                     "Test::Pod::Coverage"                 => 0,
