@@ -12,9 +12,11 @@ use lib "$Bin/lib";
 
 BEGIN
 {
-    eval "use MooX::Options 3.99; use OptionTestApp";
-    $@ and plan skip_all => "Need MooX::Options 3.99 $@" and exit(0);
+    eval "use MooX::Options 4.100; use OptionTestApp";
+    $@ and plan skip_all => "Need MooX::Options 4.100 $@" and exit(0);
 }
+
+diag("Testing MooX::Cmd version " . MooX::Cmd->VERSION . " using MooX::Options version " . MooX::Options->VERSION);
 
 my @tests = (
     [[qw(--help)], "OptionTestApp", [], qr{\QUSAGE: 02-moox-options.t [-h]\E}, qr{\QSUB COMMANDS AVAILABLE: \E(?:oops|primary)}],

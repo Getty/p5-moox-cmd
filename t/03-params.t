@@ -98,8 +98,8 @@ use ThirdTestApp;
 
 SKIP:
 {
-    eval "use OptionTestApp;";
-    $@ and skip("MooX::Options required", 1);
+    eval "use MooX::Options 4.100; use OptionTestApp";
+    $@ and skip("MooX::Options required 4.100 $@", 1);
     local @ARGV = qw(oops);
     my $cmd = eval { OptionTestApp->new_with_cmd(command_creation_chain_methods => "new_with_options"); };
     like(

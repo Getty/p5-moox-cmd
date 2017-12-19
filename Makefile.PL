@@ -62,7 +62,7 @@ WriteMakefile1(
                     "Test::Spelling"                      => 0,
                 },
                 recommends => {
-                    "MooX::Options" => "3.99",
+                    "MooX::Options" => "4.103",
                 },
             },
             configure => {
@@ -77,7 +77,7 @@ WriteMakefile1(
                 },
                 recommends => {
                     "Hash::Merge"          => "0.299",
-                    "MooX::ConfigFromFile" => 0,
+                    "MooX::ConfigFromFile" => "0.008",
                     "Text::Abbrev"         => 0,
                 },
             },
