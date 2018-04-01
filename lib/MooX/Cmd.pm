@@ -161,7 +161,7 @@ Eases the writing of command line utilities, accepting commands and
 subcommands and so on. These commands can form a tree, which is
 mirrored in the package structure. On invocation each command along
 the path through the tree (starting from the toplevel command
-through to the most specific one) is instanciated.
+through to the most specific one) is instantiated.
 
 Each command needs to have an C<execute> function, accepting three
 parameters:
@@ -285,7 +285,7 @@ And some sample invocations:
   MyApp::Cmd::frobnicate.execute($self,[],[MyApp, MyApp::Cmd::frobnicate])
 
 As you can see the chain contains our toplevel command object and
-then the specififc one.
+then the specific one.
 
   $ ./MyApp.pl frobnicate arg1
   MyApp::Cmd::frobnicate.execute($self,[arg1],[MyApp, MyApp::Cmd::frobnicate])
