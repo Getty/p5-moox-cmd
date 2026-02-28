@@ -1,6 +1,6 @@
 package MooX::Cmd;
 # ABSTRACT: Giving an easy Moo style way to make command organized CLI apps
-
+our $VERSION = '1.001';
 use strict;
 use warnings;
 

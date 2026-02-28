@@ -1,6 +1,6 @@
 package MooX::Cmd::Role;
 # ABSTRACT: MooX cli app commands do this
-
+our $VERSION = '1.001';
 use strict;
 use warnings;
 
