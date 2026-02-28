@@ -4,7 +4,6 @@ top             = 50
 theme           = pbp || core || bugs || security || maintenance
 criticism-fatal = 1
 color           = 1
-allow-unsafe    = 1
 
 [-Modules::ProhibitAutomaticExportation]
 [-Subroutines::RequireFinalReturn]

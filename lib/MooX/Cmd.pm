@@ -1,9 +1,8 @@
 package MooX::Cmd;
+# ABSTRACT: Giving an easy Moo style way to make command organized CLI apps
 
 use strict;
 use warnings;
-
-our $VERSION = "0.017";
 
 use Package::Stash;
 
@@ -65,11 +64,7 @@ sub import
 
 =encoding utf8
 
-=head1 NAME
-
-MooX::Cmd - Giving an easy Moo style way to make command organized CLI apps
-
-=head1 SYNOPSIS
+=synopsis
 
   package MyApp;
 
@@ -84,7 +79,7 @@ MooX::Cmd - Giving an easy Moo style way to make command organized CLI apps
   }
 
   1;
- 
+
   package MyApp::Cmd::Command;
   # for "myapp command"
 
@@ -129,7 +124,7 @@ MooX::Cmd - Giving an easy Moo style way to make command organized CLI apps
   }
 
   1;
- 
+
   package MyZapp::Cmd::Command;
   # for "myapp command"
 
@@ -155,13 +150,13 @@ MooX::Cmd - Giving an easy Moo style way to make command organized CLI apps
 
   1;
 
-=head1 DESCRIPTION
+=description
 
 Eases the writing of command line utilities, accepting commands and
 subcommands and so on. These commands can form a tree, which is
 mirrored in the package structure. On invocation each command along
 the path through the tree (starting from the toplevel command
-through to the most specific one) is instanciated.
+through to the most specific one) is instantiated.
 
 Each command needs to have an C<execute> function, accepting three
 parameters:
@@ -199,19 +194,19 @@ Same as C<chain> argument to C<execute>.
 
 =item C<command_name>
 
-TODO
+The name of the command as found on the command line.
 
 =item C<command_commands>
 
-TODO
+HashRef of available subcommands for this command.
 
 =item C<command_args>
 
-TODO
+ArrayRef of remaining arguments after command parsing.
 
 =item C<command_base>
 
-TODO
+The base namespace for searching subcommand plugins.
 
 =back
 
@@ -285,7 +280,7 @@ And some sample invocations:
   MyApp::Cmd::frobnicate.execute($self,[],[MyApp, MyApp::Cmd::frobnicate])
 
 As you can see the chain contains our toplevel command object and
-then the specififc one.
+then the specific one.
 
   $ ./MyApp.pl frobnicate arg1
   MyApp::Cmd::frobnicate.execute($self,[arg1],[MyApp, MyApp::Cmd::frobnicate])
@@ -373,22 +368,14 @@ parsed for the specific context and used for the instantiation:
 
   $ ./MyApp.pl --argformyapp command --argformyappcmdcommand ...
 
-=head1 SUPPORT
-
-Repository
-
-  http://github.com/Getty/p5-moox-cmd
-  Pull request and additional contributors are welcome
-
-Issue Tracker
-
-  http://github.com/Getty/p5-moox-cmd/issues
-  http://rt.cpan.org/NoAuth/Bugs.html?Dist=MooX-Cmd
-  bug-moox-cmd at rt.cpan.org
-
 =head1 THANKS
 
 =over
+
+=item Jens Rehsack (rehsack)
+
+Co-maintained MooX::Cmd from 2013 to 2017, major contributions to
+MooX::Cmd::Role, MooX::Cmd::Tester and the test suite
 
 =item Lukas Mai (mauke), Toby Inkster (tobyink)
 
@@ -398,20 +385,6 @@ Gave some helpful advice for solving difficult issues
 
 Integration into MooX::Options for better help messages and suit team play
 
-=item Torsten Raudssus (Getty)
-
-did the initial work and brought it to CPAN
-
 =back
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2017 Jens Rehsack.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See L<http://dev.perl.org/licenses/> for more information.
 
 =cut

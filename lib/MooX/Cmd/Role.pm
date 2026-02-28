@@ -1,9 +1,8 @@
 package MooX::Cmd::Role;
+# ABSTRACT: MooX cli app commands do this
 
 use strict;
 use warnings;
-
-our $VERSION = "0.017";
 
 use Moo::Role;
 
@@ -14,21 +13,17 @@ use Text::ParseWords 'shellwords';
 use Module::Pluggable::Object;
 
 use List::MoreUtils qw/first_index first_result/;
-use Scalar::Util qw/blessed/;
-use Params::Util qw/_ARRAY/;
+use Scalar::Util    qw/blessed/;
+use Params::Util    qw/_ARRAY/;
 
-=head1 NAME
-
-MooX::Cmd::Role - MooX cli app commands do this
-
-=head1 SYNOPSIS
+=synopsis
 
 =head2 using role and want behavior as MooX::Cmd
 
   package MyFoo;
-  
+
   with MooX::Cmd::Role;
-  
+
   sub _build_command_execute_from_new { 1 }
 
   package main;
@@ -76,13 +71,11 @@ MooX::Cmd::Role - MooX cli app commands do this
   my $cmd = MyFoo->new_with_cmd;
   $cmd->command_chain->[-1]->run();
 
-=head1 DESCRIPTION
+=description
 
 MooX::Cmd::Role is made for modern, flexible Moo style to tailor cli commands.
 
-=head1 ATTRIBUTES
-
-=head2 command_args
+=attr command_args
 
 ARRAY-REF of args on command line
 
@@ -90,7 +83,7 @@ ARRAY-REF of args on command line
 
 has 'command_args' => (is => "ro");
 
-=head2 command_chain
+=attr command_chain
 
 ARRAY-REF of commands lead to this instance
 
@@ -98,7 +91,7 @@ ARRAY-REF of commands lead to this instance
 
 has 'command_chain' => (is => "ro");
 
-=head2 command_chain_end
+=attr command_chain_end
 
 COMMAND accesses the finally detected command in chain
 
@@ -108,7 +101,7 @@ has 'command_chain_end' => (is => "lazy");
 
 sub _build_command_chain_end { $_[0]->command_chain->[-1] }
 
-=head2 command_name
+=attr command_name
 
 ARRAY-REF the name of the command lead to this command
 
@@ -116,9 +109,9 @@ ARRAY-REF the name of the command lead to this command
 
 has 'command_name' => (is => "ro");
 
-=head2 command_commands
+=attr command_commands
 
-HASH-REF names of other commands 
+HASH-REF names of other commands
 
 =cut
 
@@ -146,7 +139,7 @@ sub _build_command_commands
     \%cmds;
 }
 
-=head2 command_base
+=attr command_base
 
 STRING base of command plugins
 
@@ -156,7 +149,7 @@ has command_base => (is => "lazy");
 
 sub _build_command_base { $_[0] . '::Cmd'; }
 
-=head2 command_execute_method_name
+=attr command_execute_method_name
 
 STRING name of the method to invoke to execute a command, default "execute"
 
@@ -166,9 +159,9 @@ has command_execute_method_name => (is => "lazy");
 
 sub _build_command_execute_method_name { "execute" }
 
-=head2 command_execute_return_method_name
+=attr command_execute_return_method_name
 
-STRING I have no clue what that is good for ...
+STRING name of the attribute for storing the return value of execute
 
 =cut
 
@@ -176,7 +169,7 @@ has command_execute_return_method_name => (is => "lazy");
 
 sub _build_command_execute_return_method_name { "execute_return" }
 
-=head2 command_creation_method_name
+=attr command_creation_method_name
 
 STRING name of constructor
 
@@ -186,7 +179,7 @@ has command_creation_method_name => (is => "lazy");
 
 sub _build_command_creation_method_name { "new_with_cmd" }
 
-=head2 command_creation_chain_methods
+=attr command_creation_chain_methods
 
 ARRAY-REF names of methods to chain for creating object (from L</command_creation_method_name>)
 
@@ -196,7 +189,7 @@ has command_creation_chain_methods => (is => "lazy");
 
 sub _build_command_creation_chain_methods { ['new_with_options', 'new'] }
 
-=head2 command_execute_from_new
+=attr command_execute_from_new
 
 BOOL true when constructor shall invoke L</command_execute_method_name>, false otherwise
 
@@ -206,9 +199,7 @@ has command_execute_from_new => (is => "lazy");
 
 sub _build_command_execute_from_new { 0 }
 
-=head1 METHODS
-
-=head2 new_with_cmd
+=method new_with_cmd
 
 initializes by searching command line args for commands and invoke them
 
@@ -323,7 +314,7 @@ sub _initialize_from_cmd
             $cmd_plugin = $creation_method->($cmd);
             push @{$self->command_chain}, $cmd_plugin;
 
-            my $cemn = $cmd_plugin->can("command_execute_method_name");
+            my $cemn     = $cmd_plugin->can("command_execute_method_name");
             my $exec_fun = $cemn ? $cemn->() : $self->command_execute_method_name();
             $self->command_execute_from_new
               and $self->{$self->command_execute_return_method_name} =
@@ -340,7 +331,7 @@ sub _initialize_from_cmd
     return $self;
 }
 
-=head2 execute_return
+=method execute_return
 
 returns the content of $self->{execute_return}
 
@@ -348,17 +339,5 @@ returns the content of $self->{execute_return}
 
 # XXX should be an r/w attribute - can be renamed on loading ...
 sub execute_return { $_[0]->{execute_return} }
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2012-2013 Torsten Raudssus, Copyright 2013-2017 Jens Rehsack.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See L<http://dev.perl.org/licenses/> for more information.
-
-=cut
 
 1;

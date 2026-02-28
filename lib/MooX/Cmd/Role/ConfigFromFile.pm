@@ -1,15 +1,29 @@
 package MooX::Cmd::Role::ConfigFromFile;
+# ABSTRACT: MooX::ConfigFromFile support role for MooX::Cmd
 
 use strict;
 use warnings;
 
-our $VERSION = "0.017";
-
 use Moo::Role;
 
-=head1 NAME
+=description
 
-MooX::Cmd::Role::ConfigFromFile - MooX::ConfigFromFile support role for MooX::Cmd
+Extends L<MooX::ConfigFromFile::Role> config prefix support to include the
+current command chain. Each command name in the chain is appended to the
+config prefixes, allowing per-command configuration file sections.
+
+Enable via L<MooX::Cmd>:
+
+  package MyApp;
+  use Moo;
+  use MooX::Cmd with_config_from_file => 1;
+
+This will automatically compose both L<MooX::ConfigFromFile::Role> and this
+role into your command classes.
+
+=seealso
+
+L<MooX::ConfigFromFile>
 
 =cut
 
@@ -27,17 +41,5 @@ around _build_config_prefixes => sub {
 
     return $cfg_pfxs;
 };
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2015-2017 Jens Rehsack.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See L<http://dev.perl.org/licenses/> for more information.
-
-=cut
 
 1;

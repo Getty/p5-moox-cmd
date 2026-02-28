@@ -1,9 +1,8 @@
 package MooX::Cmd::Tester;
+# ABSTRACT: MooX cli app commands tester
 
 use strict;
 use warnings;
-
-our $VERSION = "0.017";
 
 require Exporter;
 use Test::More import => ['!pass'];
@@ -26,13 +25,77 @@ BEGIN
     };
 }
 
+=synopsis
+
+  use MooX::Cmd::Tester;
+  use Test::More;
+
+  use MyFoo;
+
+  # basic tests as instance check, initialization check etc. is done there
+  my $rv = test_cmd( MyFoo => [ command(s) option(s) ] );
+
+  like( $rv->stdout, qr/operation successful/, "Command performed" );
+  like( $rv->stderr, qr/patient dead/, "Deal with expected command error" );
+
+  is_deeply( $rv->execute_rv, \@expected_return_values, "got what I deserve?" );
+
+  cmp_ok( $rv->exit_code, "==", 0, "Command successful" );
+
+=description
+
+The test coverage of most CLI apps is somewhere between poor and wretched.
+With the same approach as L<App::Cmd::Tester> comes MooX::Cmd::Tester to
+ease writing tests for CLI apps.
+
+=method result_class
+
+Builder for result class to use. Returns C<MooX::Cmd::Tester::Result> by
+default.
+
+=cut
+
 sub result_class { 'MooX::Cmd::Tester::Result' }
+
+=method test_cmd
+
+  my $rv = test_cmd( MyApp => \@argv );
+
+test_cmd invokes the app with given argv as if would be invoked from
+command line and captures the output, the return values and exit code.
+
+Some minor tests are done to prove whether class matches, execute succeeds,
+command_name and command_chain are not totally scrambled.
+
+It returns an object with following attributes/accessors:
+
+=over
+
+=item app - Name of package of App
+
+=item cmd - Name of executed (1st level) command
+
+=item stdout - Content of stdout
+
+=item stderr - Content of stderr
+
+=item output - Content of merged stdout and stderr
+
+=item error - the exception thrown by running the application (if any)
+
+=item execute_rv - return values from execute
+
+=item exit_code - 0 on success, $! when error occurred and $! available, -1 otherwise
+
+=back
+
+=cut
 
 sub test_cmd
 {
     my ($app, $argv) = @_;
 
-    my $result = _run_with_capture($app, $argv);
+    my $result    = _run_with_capture($app, $argv);
     my $exit_code = defined $result->{error} ? ((0 + $!) || -1) : 0;
 
     $result->{error}
@@ -46,6 +109,19 @@ sub test_cmd
         }
     );
 }
+
+=method test_cmd_ok
+
+  my $rv = test_cmd_ok( MyApp => \@argv );
+
+Runs C<test_cmd> and expects it being successful - command_name must be in
+command_commands, etc.
+
+Returns the same object C<test_cmd> returns.
+
+If an error occurred, no additional test is done (behavior as C<test_cmd>).
+
+=cut
 
 sub test_cmd_ok
 {
@@ -167,110 +243,11 @@ for my $attr (qw(app cmd stdout stderr output error execute_rv exit_code))
     }
 }
 
-=head1 NAME
-
-MooX::Cmd::Tester - MooX cli app commands tester
-
-=head1 SYNOPSIS
-
-  use MooX::Cmd::Tester;
-  use Test::More;
-
-  use MyFoo;
-
-  # basic tests as instance check, initialization check etc. is done there
-  my $rv = test_cmd( MyFoo => [ command(s) option(s) ] );
-
-  like( $rv->stdout, qr/operation successful/, "Command performed" );
-  like( $rv->stderr, qr/patient dead/, "Deal with expected command error" );
-
-  is_deeply( $rv->execute_rv, \@expected_return_values, "got what I deserve?" );
-
-  cmp_ok( $rv->exit_code, "==", 0, "Command successful" );
-
-=head1 DESCRIPTION
-
-The test coverage of most CLI apps is somewhere between poor and wretched.
-With the same approach as L<App::Cmd::Tester> comes MooX::Cmd::Tester to
-ease writing tests for CLI apps.
-
-=head1 FUNCTIONS
-
-=head2 test_cmd
-
-  my $rv = test_cmd( MyApp => \@argv );
-
-test_cmd invokes the app with given argv as if would be invoked from
-command line and captures the output, the return values and exit code.
-
-Some minor tests are done to prove whether class matches, execute succeeds,
-command_name and command_chain are not totally scrambled.
-
-It returns an object with following attributes/accessors:
-
-=head3 app
-
-Name of package of App
-
-=head3 cmd
-
-Name of executed (1st level) command
-
-=head3 stdout
-
-Content of stdout
-
-=head3 stderr
-
-Content of stderr
-
-=head3 output
-
-Content of merged stdout and stderr
-
-=head3 error
-
-the exception thrown by running the application (if any)
-
-=head3 execute_rv
-
-return values from execute
-
-=head3 exit_code
-
-0 on success, $! when error occurred and $! available, -1 otherwise
-
-=head2 test_cmd_ok
-
-  my $rv = test_cmd_ok( MyApp => \@argv );
-
-Runs C<test_cmd> and expects it being successful - command_name must be in
-command_commands, etc.
-
-Returns the same object C<test_cmd> returns.
-
-If an error occurred, no additional test is done (behavior as C<test_cmd>).
-
-=head2 result_class
-
-Builder for result class to use. Returns C<MooX::Cmd::Tester::Result> by
-default.
-
 =head1 ACKNOWLEDGEMENTS
 
 MooX::Cmd::Tester is I<inspired> by L<App::Cmd::Tester> from Ricardo Signes.
 In fact, I reused the entire design and adopt it to the requirements of
 MooX::Cmd.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2013-2017 Jens Rehsack.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See L<http://dev.perl.org/licenses/> for more information.
 
 =cut
 
