@@ -1,0 +1,3 @@
+claude: true
+prompt: |
+  Drain the MooX-Cmd karr board. A Moo style way to build command organised CLI applications with roles for abbreviation and config files. Delegate behaviour-relevant code to the moox-cmd-worker agent and release audits to moox-cmd-release-manager; follow .claude/rules/moox-cmd-rules.md. Never release.
