@@ -1,0 +1,41 @@
+---
+class: standard
+completed: 2026-10-21T03:57:37Z
+created: 2026-10-21T02:19:12Z
+id: 5
+priority: medium
+started: 2026-10-21T03:57:37Z
+status: done
+tags:
+- claude
+- skills
+- skilletor
+title: Getrackte Skill-Kopien driften von den installierten Getty-Skills ab
+updated: 2026-10-21T03:58:18Z
+---
+
+Unter `.claude/skills/` liegen drei Skills als getrackte Handkopien, die nicht aus `skilletor.json` stammen:
+
+- `.claude/skills/perl-moo/SKILL.md` — die installierte Fassung heisst `getty-perl-moo` (Quelle `getty`).
+- `.claude/skills/perl-release-author-getty/SKILL.md` — die installierte Fassung heisst `getty-perl-release-author-getty` (Quelle `karr`).
+- `.claude/skills/perl-release-dist-ini/SKILL.md` — diese Kopie ist sogar der Name, den der Release-Manager briefed. Die Quelle ist `getty`, aber der Skill steht in keinem `skilletor.lock.json` — `skilletor status` zeigt ihn mit `·` statt mit `✓` an.
+
+Folge: die Kopien bekommen keine Updates mehr und weichen von den Skills ab, die die Agenten tatsaechlich briefed bekommen. Die installierten Skills tragen in ihrem Ordner eine `.gitignore` mit `*`, bleiben also untracked; nur die selbst geschriebene `moox-cmd-core` wird getrackt.
+
+Arbeit:
+- Klaren, ob die drei Kopien ueberhaupt gebraucht werden. Der Release-Manager briefed `perl-release-dist-ini` — dieser Name muss aufloesen.
+- Wenn die installierten `getty-*`-Fassungen den Inhalt tragen: die Kopien aus dem Tracking nehmen (`git rm --cached`), damit `skilletor` sie verwalten kann, und die `briefing.skills`-Namen in `.claude/agents/` auf die installierten Namen umstellen.
+- Wenn eine Kopie bleiben muss, weil es keinen installierten Gegenpart gibt: sie in `skilletor.json` als eigene Quelle aufnehmen, damit sie beim Sync nicht als Drift auffaellt.
+- Nachkontrolle: `skilletor status` zeigt fuer alle Skills ein `✓`, und jeder Name in `briefing.skills` loest auf `.claude/skills/<name>/SKILL.md` auf — sonst verweigert das briefing-Plugin den Spawn des Agenten.
+
+Kein Release, kein Push. Reine Konfigurationsarbeit an `.claude/`.
+
+Praezisierung nach der Pruefung des Zustands:
+
+- Der Ordner skills/perl-release-dist-ini im Projekt enthaelt nur die SKILL.md, keine eigene .gitignore. Alle anderen installierten Skills tragen eine .gitignore mit einem Stern, die ihren Inhalt aus der Versionsverwaltung haelt. Genau das fehlt hier — die Kopie ist getrackt und blockiert die Verwaltung.
+- Die Lock-Datei des Projekts fuehrt skills/perl-release-dist-ini nicht: der Eintrag fehlt, die Skill wird aber in skilletor.json als installiert deklariert. Deshalb meldet skilletor status dort ein Mittelpunktzeichen statt eines Hakens.
+- Verifikation nach der Korrektur: der Ordner skills/perl-release-dist-ini traegt wieder eine .gitignore, der Inhalt ist untracked, und skilletor status zeigt fuer jeden Skill ein Haken.
+
+Konkretes Vorgehen: die drei Ordner aus der Versionsverwaltung nehmen und physisch loeschen, danach den Sync der Bibliothek laufen lassen, damit die installierte Fassung mit ihrer .gitignore neu entsteht. Die Agentendateien muessen dabei nicht umgestellt werden, wenn der Name perl-release-dist-ini nach dem Sync aufloest — sonst auf den installierten Namen umstellen.
+
+Karte bleibt offen: MooX::ConfigFromFile ist inzwischen lokal installiert, die Suite laeuft mit 191 Tests gruen. Das Grundproblem bleibt — ohne CI faellt der Skip still auf.
