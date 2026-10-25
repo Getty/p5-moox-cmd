@@ -1,8 +1,8 @@
 package MooX::Cmd::Role::ConfigFromFile;
 # ABSTRACT: MooX::ConfigFromFile support role for MooX::Cmd
-our $VERSION = '1.001';
 use strict;
 use warnings;
+our $VERSION = '1.001';
 
 use Moo::Role;
 

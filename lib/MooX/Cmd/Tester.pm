@@ -1,8 +1,8 @@
 package MooX::Cmd::Tester;
 # ABSTRACT: MooX cli app commands tester
-our $VERSION = '1.001';
 use strict;
 use warnings;
+our $VERSION = '1.001';
 
 require Exporter;
 use Test::More import => ['!pass'];

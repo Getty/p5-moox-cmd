@@ -1,8 +1,8 @@
 package MooX::Cmd::Role::AbbrevCmds;
 # ABSTRACT: Text::Abbrev support role for MooX::Cmd
-our $VERSION = '1.001';
 use strict;
 use warnings;
+our $VERSION = '1.001';
 
 use Text::Abbrev;
 

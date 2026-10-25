@@ -1,8 +1,8 @@
 package MooX::Cmd::Role;
 # ABSTRACT: MooX cli app commands do this
-our $VERSION = '1.001';
 use strict;
 use warnings;
+our $VERSION = '1.001';
 
 use Moo::Role;
 
@@ -103,7 +103,7 @@ sub _build_command_chain_end { $_[0]->command_chain->[-1] }
 
 =attr command_name
 
-ARRAY-REF the name of the command lead to this command
+The name of the command that lead to this command, as plain string
 
 =cut
 
