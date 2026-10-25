@@ -46,7 +46,9 @@ are force-loaded into the agents below. Do not restate them here.
 ## Delegation
 
 Delegate behavior-relevant code to the right agent instead of touching it yourself —
-principle and lane are in `.claude/rules/moox-cmd-rules.md`.
+the delegation lock and the publish gate are shared house rules (skilletor bundle
+`getty-cpan-dist@getty`); lanes and the framework contract are in
+`.claude/rules/moox-cmd-rules.md`.
 
 | Task | Agent |
 |---|---|
