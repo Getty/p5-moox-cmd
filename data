@@ -1,0 +1,36 @@
+---
+claimed_at: 2026-10-25T05:35:51Z
+claimed_by: offen-2610
+class: standard
+completed: 2026-10-25T05:35:51Z
+created: 2026-10-21T02:18:42Z
+id: 1
+priority: high
+started: 2026-10-25T05:25:04Z
+status: done
+tags:
+- xt
+- perlcritic
+- pod
+title: Autorentests und POD passen nicht zum Code
+updated: 2026-10-25T05:35:51Z
+---
+
+`prove -lr xt/` scheitert an `xt/perlcritic.t` fuer alle fuenf Module der Dist.
+
+`xt/perlcritic.rc` setzt severity 3. Beanstandet wird in jedem Modul:
+
+- Severity 5: "Code before strictures are enabled at line 3, near 'our \$VERSION = '1.001';'" — das `our \$VERSION` steht VOR `use strict; use warnings;`.
+- Severity 4: "Code before warnings are enabled".
+
+Betroffen sind alle fuenf Dateien unter `lib/`:
+`lib/MooX/Cmd.pm`, `lib/MooX/Cmd/Role.pm`, `lib/MooX/Cmd/Tester.pm`,
+`lib/MooX/Cmd/Role/AbbrevCmds.pm`, `lib/MooX/Cmd/Role/ConfigFromFile.pm`.
+
+Arbeit: In jeder der fuenf Dateien `use strict; use warnings;` ueber `our \$VERSION` ziehen (die Pragmas zuerst, dann das Versions-Statement). Die Reihenfolge ist die einzige Aenderung. `xt/perlcritic.rc` wird NICHT angefasst — die Schwere ist Absicht.
+
+Zweiter Befund im selben Bereich: die POD von `command_name` in `lib/MooX/Cmd/Role.pm` sagt "ARRAY-REF the name of the command", das Attribut haelt aber einen einfachen String (`$params{command_name} = $cmd_name;` in `_initialize_from_cmd`). Die POD korrigieren — das Attribut bleibt ein String, weil `MooX::Cmd::Tester` und `MooX::Cmd::Role::ConfigFromFile` davon ausgehen.
+
+Nachweis: `prove -lr xt/perlcritic.t` laeuft gruen. Ein `Changes`-Eintrag ist noetig, das ist eine sichtbare Aenderung am Modulkopf aller fuenf Module.
+
+Commit b7a9a77 (Branch offen-2610). prove -lr xt/perlcritic.t gruen. Also found: t/02 nutzt MooX::Options, das nicht im cpanfile steht; xt/changes.t skippt wegen Platzhalter (erwartet).
