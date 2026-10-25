@@ -1,0 +1,31 @@
+---
+claimed_at: 2026-10-25T05:36:12Z
+claimed_by: offen-2610
+class: standard
+completed: 2026-10-25T05:36:12Z
+created: 2026-10-21T02:19:19Z
+id: 6
+priority: medium
+started: 2026-10-25T05:25:22Z
+status: done
+tags:
+- ci
+- xt
+title: 'Keine CI: die Autorentests unter xt/ laufen nur lokal'
+updated: 2026-10-25T05:36:12Z
+---
+
+Das Repo hat keine CI-Konfiguration (kein `.github/`, keine `.travis.yml`, keine GitLab-Pipeline). Die Autorentests unter `xt/` — perlcritic, pod-coverage, changes, kwalitee, perltidy, pod-cm, spelling — laufen nur, wenn jemand lokal `prove -lr xt/` aufruft.
+
+Damit fällt die Pruefung, die den Code in Form haelt, genau dann aus, wenn niemand lokal daran denkt. Die Karte zum perlcritic-Fehler zeigt das Bild: der Fehler steht seit dem Umstieg auf Dist::Zilla im Baum.
+
+Arbeit:
+- Eine CI-Konfiguration anlegen, die mindestens `prove -lr t/` und `prove -lr xt/` auf einer aktuellen Perl-Version fährt. Die beiden Autorentests, die ihre Dev-Abhaengigkeiten brauchen (kwalitee, perltidy, pod-cm, spelling), brauchen ihre `on develop`-Abhaengigkeiten aus dem cpanfile — die sind in `skilletor.lock.json` nicht relevant, sondern in der CI-Umgebung zu installieren.
+- Festlegen, auf welchen Perl-Versionen gelaufen wird, und das im Repo dokumentieren.
+- Der Build darf keine Veroeffentlichung ausloesen: kein `dzil release`, kein CPAN-Upload, kein Push aus der Pipeline heraus.
+
+Wenn die Flotte (siehe `fleet` im Hub) einen gemeinsamen CI-Weg fuer die p5-Dists anbietet, ist das die bevorzugte Loesung — dann dort mitmachen statt eine eigene Datei zu bauen. Sonst eine eigene Konfiguration fuer dieses Repo.
+
+Ein `Changes`-Eintrag ist noetig, wenn die CI etwas an der Distribution aendert (z.B. eine neue Dev-Abhaengigkeit im cpanfile).
+
+Commit c6c75ec. Eigene .github/workflows/ci.yml (Fleet-Weg im Hub nicht einsehbar): Perl 5.30/5.38/5.40, t/ und xt/, read-only Token, kein Release. In CI nicht ausgefuehrt, nur YAML geprueft.
