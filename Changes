@@ -3,6 +3,8 @@
     enabled before any other code, as perlcritic requires.
   - Correct the documentation of the command_name attribute: it holds the
     command name as plain string, not an array reference.
+  - Ship a LICENSE file and state the copyright year, so the distribution
+    builds again.
 
 1.000     2026-02-28 19:14:47Z
     - Switch to Dist::Zilla with @Author::GETTY plugin bundle
