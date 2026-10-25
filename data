@@ -1,0 +1,30 @@
+---
+claimed_at: 2026-10-25T05:36:01Z
+claimed_by: offen-2610
+class: standard
+completed: 2026-10-25T05:36:01Z
+created: 2026-10-21T02:18:57Z
+id: 3
+priority: high
+started: 2026-10-25T05:25:13Z
+status: done
+tags:
+- cpanfile
+- roles
+title: Optionale Rollen laden ihre recommends-Abhaengigkeit zur Compile-Zeit
+updated: 2026-10-25T05:36:01Z
+---
+
+Beide optionalen Rollen ziehen ihre externe Abhaengigkeit beim Kompilieren, obwohl das cpanfile sie nur als `recommends` fuehrt. Damit braucht jede Anwendung, die die Rolle gar nicht benutzt, das Modul trotzdem installiert.
+
+1. `lib/MooX/Cmd/Role/AbbrevCmds.pm` hat ein `use Text::Abbrev;` auf Modulebene. `Text::Abbrev` steht im cpanfile unter `recommends`. Die Rolle wird nur gebraucht, wenn eine Anwendung `use MooX::Cmd with_abbrev_cmds => 1;` schreibt.
+2. `lib/MooX/Cmd/Role/ConfigFromFile.pm` selbst laedt nichts, aber der Importer zieht bei `with_config_from_file => 1` `MooX::ConfigFromFile::Role` und `MooX::ConfigFromFile::Role` des Fremdmoduls `MooX::ConfigFromFile`. `MooX::ConfigFromFile` steht ebenfalls nur unter `recommends`.
+
+Arbeit:
+- `use Text::Abbrev;` aus `AbbrevCmds.pm` entfernen und die Funktion erst zur Aufrufzeit laden (`require Text::Abbrev;` im `around`-Block), mit einer klaren Fehlermeldung, wenn das Modul fehlt.
+- Fuer die ConfigFromFile-Rolle pruefen, ob `MooX::ConfigFromFile::Role` sich beim `with` der Rolle oder erst bei der Nutzung laden laesst; wenn der Importer die Fremdrolle ziehen muss, dann dort laden und die Fehlermeldung fuer den fehlenden Fall aussagekraeftig machen.
+- Ein Test, der belegt: eine Anwendung ohne AbbrevCmds laedt `Text::Abbrev` nicht. Der Test darf keine der recommends-Abhaengigkeiten voraussetzen.
+
+Kein Umbau der oeffentlichen Schnittstelle: die Import-Optionen `with_abbrev_cmds` und `with_config_from_file` und das Verhalten der Rollen bleiben, wie sie sind.
+
+Commit 67b51b2. Moo with laedt die Fremdrolle ohnehin erst beim Import mit der Option; dort jetzt require mit aussagekraeftigem croak. Test t/07 rot gegen altes lib (Tests 5 und 7).
