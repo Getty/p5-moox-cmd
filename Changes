@@ -9,6 +9,8 @@
     MooX::ConfigFromFile::Role only when with_config_from_file is given, so
     applications not using these options no longer need the recommended
     modules. A missing module now results in an error naming it.
+  - Require MooX::ConfigFromFile and Text::Abbrev for testing, so the tests
+    of the optional roles run instead of being skipped.
 
 1.000     2026-02-28 19:14:47Z
     - Switch to Dist::Zilla with @Author::GETTY plugin bundle

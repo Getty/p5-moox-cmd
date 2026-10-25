@@ -62,4 +62,11 @@ for (@tests)
     }
 }
 
+# the chain of command names is appended to the config prefixes
+my $app_rv = test_cmd(ConfigApp => []);
+my $it_rv  = test_cmd(ConfigApp => [qw(check it)]);
+my @app_prefixes = @{$app_rv->cmd->config_prefixes};
+my @it_prefixes  = @{$it_rv->cmd->command_chain_end->config_prefixes};
+is_deeply(\@it_prefixes, [@app_prefixes, qw(check it)], "config prefixes of a command are extended by the chain's command names");
+
 done_testing;
