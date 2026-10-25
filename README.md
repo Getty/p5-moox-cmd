@@ -82,6 +82,10 @@ cpanm MooX::Cmd
 
 Full documentation is available on [MetaCPAN](https://metacpan.org/pod/MooX::Cmd).
 
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `prove -lr t/` and `prove -lr xt/` on Perl 5.30, 5.38 and 5.40 for every push and pull request. The workflow only tests; it never releases or uploads.
+
 ## License
 
 This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.

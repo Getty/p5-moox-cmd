@@ -73,4 +73,4 @@ edges.
   `copyright_year`.
 - Three skills under `.claude/skills/` are tracked hand copies that drift from
   the installed `getty-*` ones.
-- There is no CI; the author tests only run locally.
+- CI: `.github/workflows/ci.yml` runs `t/` and `xt/` on Perl 5.30, 5.38 and 5.40; it never releases.
