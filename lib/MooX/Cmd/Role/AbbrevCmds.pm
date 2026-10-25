@@ -4,9 +4,9 @@ use strict;
 use warnings;
 our $VERSION = '1.001';
 
-use Text::Abbrev;
-
 use Moo::Role;
+
+use Carp qw(croak);
 
 =description
 
@@ -37,7 +37,10 @@ around _build_command_commands => sub {
     my $params   = shift;
     my $cmd_cmds = $class->$next($params, @_);
 
-    my %abbrevs  = abbrev keys %$cmd_cmds;
+    eval { require Text::Abbrev; 1 }
+      or croak "MooX::Cmd::Role::AbbrevCmds requires Text::Abbrev, please install it: $@";
+
+    my %abbrevs  = Text::Abbrev::abbrev(keys %$cmd_cmds);
     my %cmd_cmds = map { $_ => $cmd_cmds->{$abbrevs{$_}} } keys %abbrevs;
 
     return \%cmd_cmds;

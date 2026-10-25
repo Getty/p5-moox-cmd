@@ -5,6 +5,10 @@
     command name as plain string, not an array reference.
   - Ship a LICENSE file and state the copyright year, so the distribution
     builds again.
+  - Load Text::Abbrev only when abbreviated commands are used and
+    MooX::ConfigFromFile::Role only when with_config_from_file is given, so
+    applications not using these options no longer need the recommended
+    modules. A missing module now results in an error naming it.
 
 1.000     2026-02-28 19:14:47Z
     - Switch to Dist::Zilla with @Author::GETTY plugin bundle

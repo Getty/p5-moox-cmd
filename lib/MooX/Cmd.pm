@@ -4,6 +4,7 @@ use strict;
 use warnings;
 our $VERSION = '1.001';
 
+use Carp qw(croak);
 use Package::Stash;
 
 sub import
@@ -34,7 +35,12 @@ sub import
         my $with = $caller->can('with');
         $with->('MooX::Cmd::Role');
         # XXX prove whether it can chained ...
-        $import_options{with_config_from_file} and $with->('MooX::ConfigFromFile::Role');
+        if ($import_options{with_config_from_file})
+        {
+            eval { require MooX::ConfigFromFile::Role; 1 }
+              or croak "MooX::Cmd option with_config_from_file requires MooX::ConfigFromFile, please install it: $@";
+            $with->('MooX::ConfigFromFile::Role');
+        }
         $import_options{with_config_from_file} and $with->('MooX::Cmd::Role::ConfigFromFile');
         $import_options{with_abbrev_cmds}      and $with->('MooX::Cmd::Role::AbbrevCmds');
     };
