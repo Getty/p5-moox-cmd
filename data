@@ -1,0 +1,35 @@
+---
+claimed_at: 2026-10-25T05:35:56Z
+claimed_by: offen-2610
+class: standard
+completed: 2026-10-25T05:35:56Z
+created: 2026-10-21T02:18:48Z
+id: 2
+priority: high
+started: 2026-10-25T05:25:09Z
+status: done
+tags:
+- dist
+- release
+title: 'dzil build bricht ab: keine LICENSE, kein copyright_year'
+updated: 2026-10-25T05:35:56Z
+---
+
+`dzil build` bricht mitten im Build ab:
+
+    [@Author::GETTY/LicenseFile] no LICENSE in the distribution: run 'dzil genlicense' and commit the file
+
+Zwei Ursachen in `dist.ini`:
+1. Es gibt keine `LICENSE`-Datei im Repo. `[@Author::GETTY]` verlangt sie und bricht ohne sie ab.
+2. Der `[Author::GETTY]`-Block nennt kein `copyright_year` (nur `copyright_holder`).
+
+Arbeit:
+- In `dist.ini` bei `[Author::GETTY]` ein `copyright_year` ergaenzen (das Jahr der naechsten Veroeffentlichung, nicht das laufende).
+- Danach `dzil genlicense` laufen lassen und die erzeugte `LICENSE` mit `git add LICENSE` einstagen — der Schritt ist nicht optional: `Git::GatherDir` sieht nur getrackte Dateien, eine ungetrackte LICENSE taucht im Tarball nicht auf.
+- `dzil build` muss danach sauber durchlaufen.
+
+Nicht Teil dieser Karte: `dzil release`, `dzil test --release`, ein Tag oder ein CPAN-Upload. Der Build ist das Ziel, das Release bleibt beim Maintainer.
+
+`Changes` bekommt einen Eintrag, sobald sich am Distributions-Inhalt etwas aendert, das der Anwender sieht.
+
+Commit 246eb05. copyright_year = 2026 (Annahme: naechster Release noch 2026, Maintainer bitte pruefen); LICENSE per dzil genlicense, git add; dzil build sauber.
