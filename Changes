@@ -10,7 +10,9 @@
     applications not using these options no longer need the recommended
     modules. A missing module now results in an error naming it.
   - Require MooX::ConfigFromFile and Text::Abbrev for testing, so the tests
-    of the optional roles run instead of being skipped.
+    of the optional roles run instead of being skipped. Recommend
+    MooX::Options 4.100 for testing, so the tests using it are declared
+    (they skip themselves when it is absent).
   - Run the test suite and the author tests on GitHub Actions for Perl 5.30,
     5.38 and 5.40.
 

@@ -15,6 +15,7 @@ recommends 'Text::Abbrev';
 on test => sub {
     requires 'Capture::Tiny';
     requires 'MooX::ConfigFromFile', '0.008';
+    recommends 'MooX::Options',      '4.100';
     requires 'Test::More',           '0.98';
     requires 'Text::Abbrev';
 };
