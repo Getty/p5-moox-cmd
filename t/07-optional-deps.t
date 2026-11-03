@@ -26,7 +26,7 @@ eval q{
     1;
 } or diag($@);
 my $app = eval { PlainApp->new_with_cmd };
-ok($app, "app without optional roles works without the recommended modules") or diag($@);
+ok($app,                                 "app without optional roles works without the recommended modules") or diag($@);
 ok(!$INC{'Text/Abbrev.pm'},              "app without AbbrevCmds does not load Text::Abbrev");
 ok(!$INC{'MooX/ConfigFromFile/Role.pm'}, "app without ConfigFromFile does not load MooX::ConfigFromFile::Role");
 
