@@ -66,13 +66,10 @@ edges.
 
 ## State of the code
 
-- The framework works and the suite is green — `prove -lr t/` runs seven files.
-  `t/04-moox-configfromfile.t` and `t/06-abbrev-configfromfile.t` skip when
-  `MooX::ConfigFromFile` is missing; that is a hole in the coverage, not a pass.
-- `xt/perlcritic.t` fails for all five modules: `our $VERSION` stands before
-  `use strict; use warnings;`.
-- `dzil build` aborts — there is no `LICENSE` and `dist.ini` has no
-  `copyright_year`.
-- Three skills under `.claude/skills/` are tracked hand copies that drift from
-  the installed `getty-*` ones.
+- `prove -lr t/` runs eight files; the tests of the optional
+  roles run because `MooX::ConfigFromFile` and `Text::Abbrev` are test requirements.
+- `LICENSE` is tracked and `dist.ini` carries `copyright_year`, so `dzil build` runs.
+- Every module under `lib/` carries `our $VERSION` after `use strict; use warnings;`.
+- The skills under `.claude/skills/` are installed by skilletor; `moox-cmd-core` is the
+  repo's own.
 - CI: `.github/workflows/ci.yml` runs `t/` and `xt/` on Perl 5.30, 5.38 and 5.40; it never releases.

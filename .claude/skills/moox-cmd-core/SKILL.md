@@ -124,31 +124,7 @@ optional: an application that does not use them must not need their dependency.
 
 ## Rough edges
 
-These are real, they are in the tree, and they are not fixed:
-
-1. **All five modules fail `xt/perlcritic.t`.** `our $VERSION` stands *before*
-   `use strict; use warnings;` — severity 5 (code before strictures) and
-   severity 4 (code before warnings). The fix is in the modules, not in
-   `xt/perlcritic.rc`.
-2. **`dzil build` aborts**: `[@Author::GETTY/LicenseFile] no LICENSE in the
-   distribution`. There is no `LICENSE` file, and `dist.ini` has no
-   `copyright_year`.
-3. **Three tracked skills are hand copies** — `.claude/skills/perl-moo/`,
-   `.claude/skills/perl-release-author-getty/` and
-   `.claude/skills/perl-release-dist-ini/`. The installed ones are named
-   `getty-perl-moo` and `getty-perl-release-author-getty`; the copies are in no
-   `skilletor.json` and have drifted. `perl-release-dist-ini` is the name the
-   release manager briefs, but it is the one skill skilletor did not install.
-4. **Two test files skip** when `MooX::ConfigFromFile` is absent:
-   `t/04-moox-configfromfile.t` and `t/06-abbrev-configfromfile.t`. A skip is a
-   hole in the coverage, not a pass.
-5. **`command_name` contradicts its own POD.** The POD says "ARRAY-REF the name
-   of the command"; the attribute holds a plain string.
-6. **`MooX::Cmd::Role::AbbrevCmds` loads `Text::Abbrev` at compile time** even
-   though it is only a `recommends` — an app that never abbreviates still needs
-   the module installed.
-7. **There is no CI.** The author tests under `xt/` only run locally.
-8. **`_initialize_from_cmd` has a sloppy parameter list**: `command_execute_method_name`
+1. **`_initialize_from_cmd` has a sloppy parameter list**: `command_execute_method_name`
    is listed twice among the private init params and `command_creation_method_name`
    is missing from it.
 
@@ -166,10 +142,11 @@ command** is the only one whose `execute` runs.
 
 ## Tests
 
-`t/` holds seven files: `00-load.t` (the modules load), `01-simple.t` (the chain
+`t/` holds eight files: `00-load.t` (the modules load), `01-simple.t` (the chain
 and the execute contract), `02-moox-options.t` (the creation chain with
-`MooX::Options`), `03-params.t`, `04-moox-configfromfile.t`, `05-text-abbrev.t`
-and `06-abbrev-configfromfile.t`. The applications live under `t/lib/`, the
+`MooX::Options`), `03-params.t`, `04-moox-configfromfile.t`, `05-text-abbrev.t`,
+`06-abbrev-configfromfile.t` and `07-optional-deps.t`. The applications live under `t/lib/`, the
 config fixtures under `etc/`. `prove -lr t/` runs the suite, `prove -lr xt/` the
-author tests (perlcritic, pod coverage, changes, kwalitee, perltidy) — `xt/`
-currently fails (perlcritic) and skips the rest for missing dev dependencies.
+author tests (perlcritic, pod coverage, changes, kwalitee, perltidy). The tests of
+the optional roles skip when their dependency is absent; a skip is a hole in the
+coverage, not a pass. CI runs both on Perl 5.30, 5.38 and 5.40.

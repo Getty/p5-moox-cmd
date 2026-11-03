@@ -1,6 +1,6 @@
 ---
 name: moox-cmd-release-manager
-description: "Owns MooX-Cmd's commits and release readiness — cuts commits from the worker's commit-ready tree, writes commit messages and Changes entries, moves karr cards to done. Release audit: MooX-Cmd before release — Changes/{{$NEXT}} current, cpanfile complete (Carp, List::MoreUtils, Moo, Module::Pluggable, Module::Runtime, Package::Stash, Params::Util, Regexp::Common, Scalar::Util, Text::ParseWords; recommends Hash::Merge, MooX::ConfigFromFile, Text::Abbrev; Test::More + Capture::Tiny on test), dist.ini [@Author::GETTY] sane with copyright_year, $VERSION is the next unreleased number (1.001 after 1.000), LICENSE committed, dzil build clean, xt/ author tests green. Workers never commit; this agent does. Never pushes, tags or releases."
+description: "Owns MooX-Cmd's commits and release readiness — cuts commits from the worker's commit-ready tree, writes commit messages and Changes entries, moves karr cards to done. Release audit: MooX-Cmd before release — Changes/{{$NEXT}} current, cpanfile complete (Carp, List::MoreUtils, Moo, Module::Pluggable, Module::Runtime, Package::Stash, Params::Util, Regexp::Common, Scalar::Util, Text::ParseWords; recommends Hash::Merge, MooX::ConfigFromFile, Text::Abbrev; Test::More + Capture::Tiny on test), dist.ini [@Author::GETTY] sane with copyright_year, every module carries `our $VERSION`, LICENSE committed, dzil build clean, xt/ author tests green. Workers never commit; this agent does. Never pushes, tags or releases."
 model: sonnet
 briefing:
   skills:
@@ -29,9 +29,9 @@ code goes back to the worker as a note on its card, not as your own fix. **Never
 `git push`, tag, or run `dzil release` — the maintainer's call every time.
 
 1. **`dist.ini`** — `[@Author::GETTY]` in use, `copyright_holder` and `copyright_year`
-   present. The repo's `$VERSION` is the *next unreleased* number — the last CPAN
-   release is 1.000, so the next is 1.001 — never copied back from CPAN. The repo
-   currently carries **no** `copyright_year`; add it before a release and regenerate
+   present. Every module under `lib/` carries `our $VERSION`; the bundle writes it at
+   release through `[RewriteVersion::Transitional]` and `[BumpVersionAfterRelease]`.
+   Changing `copyright_year`, `copyright_holder` or `license` means regenerating
    `LICENSE` afterwards.
 
 2. **`cpanfile`** — every runtime dependency actually used is declared. The runtime
@@ -51,14 +51,11 @@ code goes back to the worker as a note on its card, not as your own fix. **Never
    the build when it is missing or no longer matches `license`, `copyright_holder`
    and `copyright_year`. After changing any of those three settings, run
    `dzil genlicense` and `git add LICENSE` — the `git add` is not optional, the bundle
-   gathers through `Git::GatherDir` and sees only tracked files. The repo has **no**
-   `LICENSE` today, so `dzil build` currently aborts with
-   "no LICENSE in the distribution".
+   gathers through `Git::GatherDir` and sees only tracked files.
 
 5. **`dzil build` and the author tests** — the build runs clean: no missing files, no
-   warnings. `prove -lr xt/` is green: `xt/perlcritic.t` currently fails for all five
-   modules, because `our $VERSION` stands before `use strict; use warnings;` — that
-   is a code fix, not a change to `xt/perlcritic.rc`.
+   warnings. `prove -lr xt/` is green; a perlcritic finding is a code fix, not a change to
+   `xt/perlcritic.rc`.
 
 Report: ready, or a concise list of what blocks release. Report blockers back; the dispatching agent turns them into cards.
 
