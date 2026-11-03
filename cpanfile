@@ -2,7 +2,7 @@ requires 'Carp';
 requires 'List::MoreUtils',   '0.406';
 requires 'Module::Pluggable', '4.8';
 requires 'Module::Runtime';
-requires 'Moo',               '0.009013';
+requires 'Moo',            '0.009013';
 requires 'Package::Stash', '0.33';
 requires 'Params::Util',   '0.37';
 requires 'Regexp::Common', '2011121001';
@@ -15,7 +15,7 @@ recommends 'Text::Abbrev';
 on test => sub {
     requires 'Capture::Tiny';
     requires 'MooX::ConfigFromFile', '0.008';
-    requires 'Test::More', '0.98';
+    requires 'Test::More',           '0.98';
     requires 'Text::Abbrev';
 };
 
