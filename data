@@ -1,0 +1,27 @@
+---
+class: standard
+created: 2026-11-10T03:00:15Z
+id: 7
+priority: high
+status: todo
+tags:
+- ci
+title: 'CI red on main: xt/perltidy.t fails on cpanfile'
+updated: 2026-11-10T03:00:15Z
+---
+
+The `CI` workflow on `main` is red at 312b906 ("Declare MooX::Options as a recommended test dependency"), step "Author tests", on perl 5.30, 5.38 and 5.40. Run: `gh run view 41950639942 -R Getty/p5-moox-cmd --log-failed`.
+
+    #   Failed test ''cpanfile''
+    xt/perltidy.t (Tests: 46 Failed: 1)
+
+The `cpanfile` as changed by that commit is not in the form `.perltidyrc` produces.
+
+## Steps
+
+1. `perltidy --profile=.perltidyrc cpanfile` and take over the result (check `git diff` touches layout only).
+2. Run the author tests the way CI does (`dzil test --author --release`, or `prove -l xt/` in a build).
+
+## Proof
+
+`xt/perltidy.t` passes locally and the next `CI` run on `main` is green.
