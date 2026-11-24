@@ -1,3 +1,5 @@
+{{$NEXT}}
+
 1.001     2026-11-24 19:24:08Z
   - Fix the module headers of all modules so that strict and warnings are
     enabled before any other code, as perlcritic requires.
